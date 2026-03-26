@@ -1,236 +1,207 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!MEDELA SUPERMERCADOl>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mercado Medela</title>
+    <title>Medela Supermercado</title>
     <style>
-        /* Reset básico */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* CONFIGURAÇÕES GERAIS */
+        :root {
+            --primary-green: #00a859;
+            --orange-main: #f37021;
+            --bg-gray: #f2f2f2;
+            --text-dark: #333;
+            --white: #ffffff;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-gray);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
         }
 
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: auto;
+        /* HEADER LARANJA (HOME) */
+        .header-home {
+            background: linear-gradient(135deg, var(--orange-main), #ff8c42);
+            padding: 25px 20px 50px 20px;
+            color: white;
+            border-radius: 0 0 25px 25px;
+            text-align: left;
         }
 
-        /* Header */
-        header {
-            background: #0077b6;
-            color: #fff;
-            padding: 15px 0;
-        }
-
-        header .logo {
-            height: 50px;
-            float: left;
-        }
-
-        header nav {
-            float: right;
-        }
-
-        header nav ul {
-            list-style: none;
-            display: flex;
-        }
-
-        header nav ul li {
-            margin-left: 20px;
-        }
-
-        header nav ul li a {
-            color: #fff;
-            text-decoration: none;
+        .logo-text {
+            font-size: 24px;
             font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        /* Hero */
-        .hero {
-            background: #90e0ef;
-            color: #03045e;
-            text-align: center;
-            padding: 100px 0;
-        }
-
-        .hero .btn {
-            padding: 10px 20px;
-            background: #0077b6;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 1rem;
-            border-radius: 5px;
-        }
-
-        /* Produtos */
-        .produtos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
-        }
-
-        .produto-card {
-            border: 1px solid #ddd;
-            padding: 20px;
-            text-align: center;
-            border-radius: 10px;
-        }
-
-        .produto-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-
-        .produto-card button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #0077b6;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Contato */
-        #contato form {
+        /* CARDS DE STATUS */
+        .status-container {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 500px;
-            margin: 20px auto;
+            gap: 12px;
+            padding: 0 20px;
+            margin-top: -30px;
         }
 
-        #contato input, #contato textarea {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .status-card {
+            background: var(--white);
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
-        #contato button {
-            padding: 10px;
-            background: #0077b6;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
+        .status-card span { font-size: 11px; color: #666; display: block; }
+        .status-card strong { font-size: 18px; display: block; margin-top: 4px; }
+        .status-green { color: var(--primary-green); }
+
+        /* SEÇÃO DE OFERTAS */
+        .section-title { padding: 20px; font-size: 18px; font-weight: bold; }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0 20px 100px 20px;
         }
 
-        /* Footer */
-        footer {
-            background: #023e8a;
-            color: #fff;
+        .product-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 12px;
             text-align: center;
-            padding: 20px 0;
+            position: relative;
         }
 
-        /* Clear floats */
-        .clearfix::after {
-            content: "";
-            display: table;
-            clear: both;
+        .economy-tag {
+            background: #fff0e5;
+            color: var(--orange-main);
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: absolute;
+            top: 8px; right: 8px;
         }
+
+        .product-card img { width: 100%; max-width: 100px; margin: 10px 0; }
+        .product-card h3 { font-size: 13px; margin: 5px 0; height: 32px; overflow: hidden; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 12px; }
+        .new-price { font-size: 18px; font-weight: bold; color: #000; }
+
+        .btn-activate {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* FORMULÁRIO DE CADASTRO (ESTILO INPUTS DO PRINT) */
+        .form-container {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 15px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; margin-bottom: 5px; color: #555; }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+            box-sizing: border-box;
+        }
+
+        /* BARRA INFERIOR */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-item { font-size: 10px; color: #888; text-align: center; }
+        .nav-active { color: var(--primary-green); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- Header / Menu -->
-    <header class="clearfix">
-        <div class="container">
-            <img src="img/logo.png" alt="Mercado Medela Logo" class="logo">
-            <nav>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#produtos">Produtos</a></li>
-                    <li><a href="#sobre">Sobre</a></li>
-                    <li><a href="#contato">Contato</a></li>
-                </ul>
-            </nav>
-        </div>
+    <header class="header-home">
+        <div class="logo-text">Medela Supermercado</div>
+        <p style="font-size: 14px; opacity: 0.9;">Olá, Michele Miranda Cancio</p>
     </header>
 
-    <!-- Home Section -->
-    <section id="home" class="hero">
-        <div class="container">
-            <h1>Bem-vindo ao Mercado Medela</h1>
-            <p>O melhor lugar para encontrar produtos de qualidade.</p>
-            <a href="#produtos" class="btn">Ver Produtos</a>
+    <section class="status-container">
+        <div class="status-card">
+            <span>Você já economizou:</span>
+            <strong class="status-green">R$ 6,21</strong>
+        </div>
+        <div class="status-card">
+            <span>Total de pontos:</span>
+            <strong>150</strong>
         </div>
     </section>
 
-    <!-- Produtos Section -->
-    <section id="produtos">
-        <div class="container">
-            <h2>Nossos Produtos</h2>
-            <div class="produtos-grid">
-                <div class="produto-card">
-                    <img src="img/produto1.jpg" alt="Produto 1">
-                    <h3>Produto 1</h3>
-                    <p>Descrição do produto 1.</p>
-                    <button>Comprar</button>
-                </div>
-                <div class="produto-card">
-                    <img src="img/produto2.jpg" alt="Produto 2">
-                    <h3>Produto 2</h3>
-                    <p>Descrição do produto 2.</p>
-                    <button>Comprar</button>
-                </div>
-                <div class="produto-card">
-                    <img src="img/produto3.jpg" alt="Produto 3">
-                    <h3>Produto 3</h3>
-                    <p>Descrição do produto 3.</p>
-                    <button>Comprar</button>
-                </div>
-            </div>
+    <div class="section-title">Cadastrar no Medela</div>
+    <section class="form-container">
+        <div class="input-group">
+            <label>* Nome Completo</label>
+            <input type="text" placeholder="Digite seu nome">
+        </div>
+        <div class="input-group">
+            <label>* CPF/CNPJ</label>
+            <input type="text" placeholder="000.000.000-00">
+        </div>
+        <div class="input-group">
+            <label>* Gênero</label>
+            <select>
+                <option>Selecione uma opção</option>
+                <option>Masculino</option>
+                <option>Feminino</option>
+            </select>
         </div>
     </section>
 
-    <!-- Sobre Section -->
-    <section id="sobre">
-        <div class="container">
-            <h2>Sobre Nós</h2>
-            <p>Somos o Mercado Medela, com anos de experiência em oferecer produtos de qualidade e atendimento impecável aos nossos clientes.</p>
+    <div class="section-title">Ofertas do Dia</div>
+    <section class="product-grid">
+        <div class="product-card">
+            <div class="economy-tag">Economize R$ 5,92</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/1134/1134444.png" alt="Carne">
+            <h3>ACÉM BOVINO RESFRIADO KG</h3>
+            <p class="old-price">R$ 35,90</p>
+            <p class="new-price">R$ 29,98</p>
+            <button class="btn-activate">Ativar Desconto</button>
+        </div>
+
+        <div class="product-card">
+            <div class="economy-tag">Economize R$ 2,01</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/1041/1041653.png" alt="Frango">
+            <h3>PEITO DE FRANGO KG</h3>
+            <p class="old-price">R$ 13,99</p>
+            <p class="new-price">R$ 11,98</p>
+            <button class="btn-activate">Ativar Desconto</button>
         </div>
     </section>
 
-    <!-- Contato Section -->
-    <section id="contato">
-        <div class="container">
-            <h2>Contato</h2>
-            <form id="form-contato">
-                <input type="text" placeholder="Nome" required>
-                <input type="email" placeholder="Email" required>
-                <textarea placeholder="Mensagem" required></textarea>
-                <button type="submit">Enviar</button>
-            </form>
-        </div>
-    </section>
+    <nav class="bottom-nav">
+        <div class="nav-item nav-active">DESCONTO</div>
+        <div class="nav-item">JORNAL</div>
+        <div class="nav-item">PONTOS</div>
+        <div class="nav-item">CONTA</div>
+    </nav>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 Mercado Medela. Todos os direitos reservados.</p>
-        </div>
-    </footer>
-
-    <script>
-        // Formulário de contato
-        document.getElementById('form-contato').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Mensagem enviada com sucesso!');
-        });
-    </script>
 </body>
 </html>
