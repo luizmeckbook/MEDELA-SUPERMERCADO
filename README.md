@@ -1,100 +1,90 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Medela Sistema Master</title>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-<style>
-body{background:#0a0a0a;color:white;font-family:Arial;text-align:center}
-header{background:#b30000;padding:15px;font-size:22px}
-.box{background:#1a1a1a;margin:20px;padding:20px;border-radius:10px}
-button{background:#b30000;color:white;padding:8px;border:none;border-radius:6px}
-input{padding:8px;margin:5px;border-radius:6px;border:none}
-</style>
-</head>
-
-<body>
-
-<header>🛒 MEDELA MASTER</header>
-
-<div class="box">
-<h3>Login</h3>
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha"><br>
-<button onclick="registrar()">Registrar</button>
-<button onclick="login()">Entrar</button>
-</div>
-
-<div id="app" style="display:none">
-
-<!-- ADMIN -->
-<div class="box">
-<h3>Admin - Produtos</h3>
-<input id="nomeProd" placeholder="Nome">
-<input id="precoProd" placeholder="Preço">
-<button onclick="addProduto()">Adicionar</button>
-</div>
-
-<!-- PRODUTOS -->
-<div class="box">
-<h3>Produtos</h3>
-<div id="produtos"></div>
-</div>
-
-<!-- CARRINHO -->
-<div class="box">
-<h3>Carrinho</h3>
-<div id="carrinho"></div>
-<p>Total: R$ <span id="total">0</span></p>
-<button onclick="finalizar()">Finalizar Pedido</button>
-</div>
-
-</div>
-
-<script>
-// 🔥 COLE SUA CONFIG AQUI
+// CONFIG
 const firebaseConfig = {
   apiKey: "COLE_AQUI",
   authDomain: "COLE_AQUI",
   projectId: "COLE_AQUI"
 };
 
-firebase.initializeApp(firebaseConfig);
+frietorerules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /produtos/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /pedidos/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /usuarios/{id} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
 let carrinho = [];
+let usuarioAtual = null;
+let isAdmin = false;
 
 // LOGIN
 function registrar(){
-  auth.createUserWithEmailAndPassword(email.value, senha.value);
+  auth.createUserWithEmailAndPassword(CPF,value, senha.value)
+  .then(res=>{
+    // cria usuário no banco
+    db.collection("usuarios").doc(res.user.uid).set({
+      email: email.value,
+      tipo: "cliente"
+    });
+  });
 }
 
 function login(){
   auth.signInWithEmailAndPassword(email.value, senha.value);
 }
 
+// LOGOUT
+function logout(){
+  auth.signOut();
+  location.reload();
+}
+
 // USUÁRIO
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(async user=>{
   if(user){
+    usuarioAtual = user;
+
+    const doc = await db.collection("usuarios").doc(user.uid).get();
+
+    if(doc.exists){
+      isAdmin = doc.data().tipo === "admin";
+    }
+
     document.getElementById("app").style.display="block";
     carregarProdutos();
+
+    // mostrar botão logout
+    document.body.innerHTML += `<button onclick="logout()">Sair</button>`;
   }
 });
 
 // PRODUTOS
 function addProduto(){
+  if(!isAdmin) return alert("Apenas admin");
+
   db.collection("produtos").add({
     nome: nomeProd.value,
-    preco: Number(precoProd.value)
+    preco: Number(precoProd.value),
+    criadoPor: usuarioAtual.uid
   });
 }
 
 function deletarProduto(id){
+  if(!isAdmin) return alert("Apenas admin");
+
   db.collection("produtos").doc(id).delete();
 }
 
@@ -109,7 +99,7 @@ function carregarProdutos(){
       div.innerHTML += `
         <p>${p.nome} - R$${p.preco}
         <button onclick="addCarrinho('${p.nome}',${p.preco})">+</button>
-        <button onclick="deletarProduto('${doc.id}')">X</button>
+        ${isAdmin ? `<button onclick="deletarProduto('${doc.id}')">X</button>` : ""}
         </p>
       `;
     });
@@ -144,19 +134,19 @@ function remover(i){
   atualizarCarrinho();
 }
 
-// PEDIDO
+// PEDIDO PROFISSIONAL
 function finalizar(){
+  if(carrinho.length === 0) return alert("Carrinho vazio");
+
   db.collection("pedidos").add({
+    userId: usuarioAtual.uid,
     itens: carrinho,
     total: carrinho.reduce((t,i)=>t+i.preco,0),
-    data: new Date()
+    status: "pendente",
+    criadoEm: new Date()
   });
 
   alert("Pedido enviado!");
   carrinho=[];
   atualizarCarrinho();
 }
-</script>
-
-</body>
-</html>
