@@ -9,13 +9,13 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #f5f5f5;
+  background: #0a0a0a;
+  color: white;
 }
 
 /* TOPO */
 header {
-  background: #1a8f3c;
-  color: white;
+  background: #b30000;
   padding: 15px;
   display: flex;
   justify-content: space-between;
@@ -30,22 +30,17 @@ header input {
   padding: 8px;
   border-radius: 8px;
   border: none;
-  width: 200px;
 }
 
 /* BANNER */
 .banner {
-  background: url('https://images.unsplash.com/photo-1607083206968-13611e3d76db');
-  background-size: cover;
-  background-position: center;
-  height: 200px;
+  background: linear-gradient(45deg,#b30000,#000);
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   font-size: 28px;
   font-weight: bold;
-  text-shadow: 0 0 10px black;
 }
 
 /* PRODUTOS */
@@ -57,11 +52,11 @@ header input {
 }
 
 .produto {
-  background: white;
+  background: #1a1a1a;
   padding: 10px;
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px #b30000;
 }
 
 .produto img {
@@ -72,7 +67,7 @@ header input {
 }
 
 .produto button {
-  background: #1a8f3c;
+  background: #b30000;
   color: white;
   border: none;
   padding: 8px;
@@ -85,10 +80,22 @@ header input {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #1a8f3c;
-  color: white;
-  text-align: center;
+  background: #b30000;
   padding: 10px;
+}
+
+.item-carrinho {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px 0;
+}
+
+.remover {
+  background: black;
+  color: red;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 </style>
@@ -102,7 +109,7 @@ header input {
 </header>
 
 <div class="banner">
-  Ofertas Imperdíveis 🔥
+  🔥 Promoções Medela
 </div>
 
 <div class="produtos">
@@ -110,29 +117,30 @@ header input {
   <div class="produto">
     <img src="https://images.unsplash.com/photo-1586201375761-83865001e31c">
     <h3>Arroz 5kg</h3>
-    <p>R$ 25,00</p>
+    <p>R$ 25</p>
     <button onclick="add('Arroz',25)">Adicionar</button>
   </div>
 
   <div class="produto">
     <img src="https://images.unsplash.com/photo-1585238342028-4c6a7c64c6d2">
     <h3>Feijão</h3>
-    <p>R$ 8,00</p>
+    <p>R$ 8</p>
     <button onclick="add('Feijão',8)">Adicionar</button>
   </div>
 
   <div class="produto">
     <img src="https://images.unsplash.com/photo-1604908177522-432d3a1fa90b">
     <h3>Leite</h3>
-    <p>R$ 5,00</p>
+    <p>R$ 5</p>
     <button onclick="add('Leite',5)">Adicionar</button>
   </div>
 
 </div>
 
 <div class="carrinho">
-  🛒 Total: R$ <span id="total">0</span>
-  <br>
+  <h3>🛒 Carrinho</h3>
+  <div id="lista"></div>
+  <p>Total: R$ <span id="total">0</span></p>
   <button onclick="comprar()">Finalizar no WhatsApp</button>
 </div>
 
@@ -142,15 +150,42 @@ let total = 0;
 
 function add(nome, preco){
   carrinho.push({nome, preco});
-  total += preco;
+  atualizar();
+}
+
+function remover(index){
+  total -= carrinho[index].preco;
+  carrinho.splice(index,1);
+  atualizar();
+}
+
+function atualizar(){
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  total = 0;
+
+  carrinho.forEach((item,index)=>{
+    total += item.preco;
+
+    let div = document.createElement("div");
+    div.className = "item-carrinho";
+
+    div.innerHTML = `
+      ${item.nome} - R$${item.preco}
+      <button class="remover" onclick="remover(${index})">X</button>
+    `;
+
+    lista.appendChild(div);
+  });
+
   document.getElementById("total").innerText = total;
 }
 
 function comprar(){
   let msg = "Pedido Medela:%0A";
 
-  carrinho.forEach(p=>{
-    msg += `${p.nome} - R$${p.preco}%0A`;
+  carrinho.forEach(item=>{
+    msg += `${item.nome} - R$${item.preco}%0A`;
   });
 
   msg += `Total: R$${total}`;
