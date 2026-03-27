@@ -1,127 +1,138 @@
-<!MEDELA SUPERMERCADOl>
+<!MEDELA SUPERMERCADO>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medela Supermercado</title>
+    <title>Medela Supermercado - Login</title>
     <style>
-        /* CONFIGURAÇÕES GERAIS */
         :root {
             --primary-green: #00a859;
             --orange-main: #f37021;
             --bg-gray: #f2f2f2;
-            --text-dark: #333;
             --white: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-gray);
             margin: 0;
-            padding: 0;
-            color: var(--text-dark);
+            overflow-x: hidden;
         }
 
-        /* HEADER LARANJA (HOME) */
-        .header-home {
-            background: linear-gradient(135deg, var(--orange-main), #ff8c42);
-            padding: 25px 20px 50px 20px;
-            color: white;
-            border-radius: 0 0 25px 25px;
+        /* TELA DE LOGIN */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+            background: white;
+            text-align: center;
+        }
+
+        .logo-box {
+            margin-bottom: 30px;
+        }
+
+        .logo-box h1 {
+            color: var(--primary-green);
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .logo-box span {
+            color: var(--orange-main);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .input-group {
             text-align: left;
+            margin-bottom: 20px;
         }
 
-        .logo-text {
-            font-size: 24px;
-            font-weight: bold;
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #666;
             margin-bottom: 5px;
         }
 
-        /* CARDS DE STATUS */
-        .status-container {
-            display: flex;
-            gap: 12px;
-            padding: 0 20px;
-            margin-top: -30px;
-        }
-
-        .status-card {
-            background: var(--white);
-            flex: 1;
+        .input-group input {
+            width: 100%;
             padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
-
-        .status-card span { font-size: 11px; color: #666; display: block; }
-        .status-card strong { font-size: 18px; display: block; margin-top: 4px; }
-        .status-green { color: var(--primary-green); }
-
-        /* SEÇÃO DE OFERTAS */
-        .section-title { padding: 20px; font-size: 18px; font-weight: bold; }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 0 20px 100px 20px;
-        }
-
-        .product-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 12px;
-            text-align: center;
-            position: relative;
-        }
-
-        .economy-tag {
-            background: #fff0e5;
-            color: var(--orange-main);
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            position: absolute;
-            top: 8px; right: 8px;
-        }
-
-        .product-card img { width: 100%; max-width: 100px; margin: 10px 0; }
-        .product-card h3 { font-size: 13px; margin: 5px 0; height: 32px; overflow: hidden; }
-        .old-price { text-decoration: line-through; color: #999; font-size: 12px; }
-        .new-price { font-size: 18px; font-weight: bold; color: #000; }
-
-        .btn-activate {
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        /* FORMULÁRIO DE CADASTRO (ESTILO INPUTS DO PRINT) */
-        .form-container {
-            background: white;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 15px;
-        }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 13px; margin-bottom: 5px; color: #555; }
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
             background: #f9f9f9;
             box-sizing: border-box;
         }
 
-        /* BARRA INFERIOR */
+        .btn-main {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,168,89,0.3);
+        }
+
+        /* ÁREA DE PRODUTOS (ESCONDIDA INICIALMENTE) */
+        #main-content {
+            display: none;
+        }
+
+        .header-app {
+            background: linear-gradient(135deg, var(--orange-main), #ff8c42);
+            padding: 30px 20px 60px 20px;
+            color: white;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .economy-bar {
+            padding: 0 20px;
+            margin-top: -35px;
+        }
+
+        .card-economy {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        .card-economy span { color: #888; font-size: 12px; }
+        .card-economy h2 { color: var(--primary-green); margin: 5px 0 0 0; font-size: 24px; }
+
+        .product-list {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 80px;
+        }
+
+        .product-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .product-item img { width: 80px; height: 80px; object-fit: contain; }
+
+        .price-new { font-weight: bold; font-size: 18px; display: block; }
+        .price-old { text-decoration: line-through; color: #999; font-size: 12px; }
+
+        /* NAV INFERIOR */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -129,79 +140,88 @@
             background: white;
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
+            padding: 15px 0;
             border-top: 1px solid #eee;
         }
-
-        .nav-item { font-size: 10px; color: #888; text-align: center; }
-        .nav-active { color: var(--primary-green); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header class="header-home">
-        <div class="logo-text">Medela Supermercado</div>
-        <p style="font-size: 14px; opacity: 0.9;">Olá, Michele Miranda Cancio</p>
-    </header>
-
-    <section class="status-container">
-        <div class="status-card">
-            <span>Você já economizou:</span>
-            <strong class="status-green">R$ 6,21</strong>
+    <section id="login-screen">
+        <div class="logo-box">
+            <h1>Medela<span> Supermercado</span></h1>
+            <p>Preencha com seus dados para entrar.</p>
         </div>
-        <div class="status-card">
-            <span>Total de pontos:</span>
-            <strong>150</strong>
+
+        <div class="login-card">
+            <div class="input-group">
+                <label>* CPF/CNPJ</label>
+                <input type="text" placeholder="000.000.000-00" id="user">
+            </div>
+            <div class="input-group">
+                <label>* Senha</label>
+                <input type="password" placeholder="••••••••" id="pass">
+            </div>
+            <button class="btn-main" onclick="fazerLogin()">Entrar</button>
+            <p style="color: var(--primary-green); font-size: 14px; margin-top: 20px; cursor: pointer;">Esqueceu sua senha?</p>
+            <p style="font-size: 14px; color: #666;">Ainda não tem conta? <strong>Cadastre-se</strong></p>
         </div>
     </section>
 
-    <div class="section-title">Cadastrar no Medela</div>
-    <section class="form-container">
-        <div class="input-group">
-            <label>* Nome Completo</label>
-            <input type="text" placeholder="Digite seu nome">
-        </div>
-        <div class="input-group">
-            <label>* CPF/CNPJ</label>
-            <input type="text" placeholder="000.000.000-00">
-        </div>
-        <div class="input-group">
-            <label>* Gênero</label>
-            <select>
-                <option>Selecione uma opção</option>
-                <option>Masculino</option>
-                <option>Feminino</option>
-            </select>
-        </div>
-    </section>
+    <main id="main-content">
+        <header class="header-app">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0;">Medela</h2>
+                    <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Olá, Cliente Medela</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%;">🔔</div>
+            </div>
+        </header>
 
-    <div class="section-title">Ofertas do Dia</div>
-    <section class="product-grid">
-        <div class="product-card">
-            <div class="economy-tag">Economize R$ 5,92</div>
-            <img src="https://cdn-icons-png.flaticon.com/512/1134/1134444.png" alt="Carne">
-            <h3>ACÉM BOVINO RESFRIADO KG</h3>
-            <p class="old-price">R$ 35,90</p>
-            <p class="new-price">R$ 29,98</p>
-            <button class="btn-activate">Ativar Desconto</button>
-        </div>
+        <section class="economy-bar">
+            <div class="card-economy">
+                <span>Você já economizou neste mês:</span>
+                <h2 id="valor-economia">R$ 0,00</h2>
+            </div>
+        </section>
 
-        <div class="product-card">
-            <div class="economy-tag">Economize R$ 2,01</div>
-            <img src="https://cdn-icons-png.flaticon.com/512/1041/1041653.png" alt="Frango">
-            <h3>PEITO DE FRANGO KG</h3>
-            <p class="old-price">R$ 13,99</p>
-            <p class="new-price">R$ 11,98</p>
-            <button class="btn-activate">Ativar Desconto</button>
-        </div>
-    </section>
+        <h3 style="padding: 20px 20px 0 20px; margin-bottom: 0;">Ofertas Especiais</h3>
+        
+        <section class="product-list">
+            <div class="product-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1134/1134444.png">
+                <p style="font-size: 12px;">Acém Bovino kg</p>
+                <span class="price-old">R$ 35,90</span>
+                <span class="price-new">R$ 29,98</span>
+                <button class="btn-main" style="padding: 8px; font-size: 12px; margin-top: 10px;">Ativar</button>
+            </div>
+            <div class="product-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1041/1041653.png">
+                <p style="font-size: 12px;">Peito de Frango kg</p>
+                <span class="price-old">R$ 13,99</span>
+                <span class="price-new">R$ 11,98</span>
+                <button class="btn-main" style="padding: 8px; font-size: 12px; margin-top: 10px;">Ativar</button>
+            </div>
+        </section>
 
-    <nav class="bottom-nav">
-        <div class="nav-item nav-active">DESCONTO</div>
-        <div class="nav-item">JORNAL</div>
-        <div class="nav-item">PONTOS</div>
-        <div class="nav-item">CONTA</div>
-    </nav>
+        <nav class="bottom-nav">
+            <div style="color: var(--primary-green); font-weight: bold;">Ofertas</div>
+            <div>Extrato</div>
+            <div>Perfil</div>
+        </nav>
+    </main>
+
+    <script>
+        function fazerLogin() {
+            // Simulação simples de transição
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            
+            // Aqui você poderá futuramente buscar o valor real do seu banco de dados
+            console.log("Usuário logado. Sincronizando dados...");
+        }
+    </script>
 
 </body>
 </html>
