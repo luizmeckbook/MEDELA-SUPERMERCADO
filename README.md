@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDELA SUPERMERCADO - PIX V4</title>
+    <title>MEDELA SUPERMERCADO - CHECKOUT PRO</title>
     <style>
         :root { --primary-green: #00a859; --orange-header: #f37021; --bg-gray: #f4f4f4; --text-dark: #333; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-gray); margin: 0; color: var(--text-dark); }
@@ -29,7 +29,12 @@
         .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .btn-green { background: var(--primary-green); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
         
-        .pix-box { background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px dashed var(--primary-green); margin: 15px 0; display: none; text-align: center; }
+        /* Checkout Styles */
+        .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .pay-btn { padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .pay-btn.selected { border-color: var(--primary-green); background: #e8f5e9; color: var(--primary-green); }
+        
+        .info-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-top: 15px; display: none; }
         .list-item { background: white; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--orange-header); }
     </style>
 </head>
@@ -41,10 +46,7 @@
             <h1 style="color: var(--primary-green); margin:0; font-size: 40px;">MEDELA</h1>
             <p style="color:var(--orange-header); font-weight:bold;">SUPERMERCADO</p>
         </div>
-        <div class="input-group">
-            <label>CPF</label>
-            <input type="text" id="login-cpf" placeholder="000.000.000-00" oninput="mascaraCPF(this)" maxlength="14">
-        </div>
+        <div class="input-group"><label>CPF</label><input type="text" id="login-cpf" placeholder="000.000.000-00" oninput="mascaraCPF(this)" maxlength="14"></div>
         <button class="btn-green" onclick="fazerLogin()">ENTRAR</button>
         <p style="text-align:center; margin-top:20px;">Novo por aqui? <b style="color:var(--orange-header); cursor:pointer" onclick="irPara('screen-register')">Cadastre-se</b></p>
         <p style="text-align:center; margin-top:50px; font-size:11px; color:#ccc; cursor:pointer;" onclick="acessoAdmin()">⚙️ ADMINISTRAÇÃO</p>
@@ -63,86 +65,91 @@
 </section>
 
 <section id="screen-home" class="app-screen">
-    <div class="header-orange">
-        <h3 id="user-display" style="margin:0">Olá!</h3>
-        <input type="text" placeholder="Pesquisar produto..." style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none;" oninput="renderHome(this.value)">
-    </div>
+    <div class="header-orange"><h3 id="user-display" style="margin:0">Olá!</h3><input type="text" placeholder="Pesquisar..." style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none;" oninput="renderHome(this.value)"></div>
     <div class="cat-container" id="cat-list"></div>
     <div class="market-grid" id="product-grid"></div>
 </section>
 
 <section id="screen-cart" class="app-screen">
     <div class="header-orange"><h2>Carrinho</h2></div>
-    <div class="container" style="padding-bottom: 200px;" id="cart-items-list"></div>
+    <div class="container" style="padding-bottom: 250px;" id="cart-items-list"></div>
     
-    <div id="cart-footer" class="container" style="position:fixed; bottom:60px; background:white; width:100%; border-top:2px solid #eee; display:none; left:50%; transform:translateX(-50%);">
-        <h3 style="color:var(--primary-green)">TOTAL: <span id="total-val" style="float:right">0,00</span></h3>
+    <div id="cart-footer" class="container" style="position:fixed; bottom:60px; background:white; width:100%; border-top:2px solid #eee; display:none; left:50%; transform:translateX(-50%); max-height: 80vh; overflow-y: auto;">
+        <h3 style="color:var(--primary-green)">TOTAL: <span id="total-val">0,00</span></h3>
         
-        <div id="pix-area" class="pix-box">
-            <p style="margin:0; font-size:12px; font-weight:bold;">Pague via PIX para finalizar:</p>
-            <p id="chave-pix-display" style="color:var(--primary-green); font-weight:bold; font-size:16px; margin:5px 0;"></p>
-            <button onclick="copiarPix()" style="font-size:11px; padding:5px; cursor:pointer;">Copiar Chave</button>
-            <p style="font-size:10px; color:red; margin-top:5px;">*Após pagar, envie o comprovante no WhatsApp*</p>
+        <label style="font-size:12px; font-weight:bold;">Selecione o Pagamento:</label>
+        <div class="payment-methods">
+            <button class="pay-btn" id="btn-pix" onclick="setMetodo('pix')">PIX</button>
+            <button class="pay-btn" id="btn-debito" onclick="setMetodo('debito')">DÉBITO</button>
+            <button class="pay-btn" id="btn-credito" onclick="setMetodo('credito')">CRÉDITO</button>
+            <button class="pay-btn" id="btn-dinheiro" onclick="setMetodo('dinheiro')">DINHEIRO</button>
         </div>
 
-        <button id="btn-finalizar-pedido" class="btn-green" onclick="mostrarPix()">PAGAR E FINALIZAR</button>
-        <button id="btn-whats" class="btn-green" style="background:#25d366; display:none;" onclick="enviarWhatsApp()">ENVIAR COMPROVANTE (WHATSAPP)</button>
+        <div id="info-pix" class="info-box">
+            <p style="font-size:12px;">Chave PIX: <b id="chave-display"></b></p>
+            <button onclick="copiarPix()" style="font-size:11px;">Copiar Chave</button>
+        </div>
+
+        <div id="info-credito" class="info-box">
+            <label style="font-size:11px;">Parcelamento (3,98% juros p/ mês):</label>
+            <select id="select-parcelas" onchange="atualizarJuros()"></select>
+        </div>
+
+        <div id="info-dinheiro" class="info-box">
+            <label style="font-size:11px;">Precisa de troco para quanto?</label>
+            <input type="number" id="troco-para" placeholder="Ex: 100">
+        </div>
+
+        <button class="btn-green" style="margin-top:15px; background:#25d366;" onclick="enviarWhatsApp()">FINALIZAR PEDIDO</button>
     </div>
 </section>
 
 <section id="screen-admin" class="app-screen">
     <div class="header-orange"><h2>Painel Admin</h2></div>
-    <div class="container" style="padding-bottom: 50px;">
-        <div style="background:#fff; padding:15px; border-radius:10px; border:1px solid var(--primary-green); margin-bottom:15px;">
-            <label style="font-weight:bold; font-size:12px;">Chave PIX da Loja:</label>
-            <input type="text" id="adm-chave-pix" placeholder="CPF, Celular ou Email">
-            <button class="btn-green" style="padding:8px; margin-top:5px; font-size:12px;" onclick="salvarChavePix()">SALVAR CHAVE PIX</button>
-        </div>
-
+    <div class="container">
+        <div class="input-group"><label>Chave PIX:</label><input type="text" id="adm-chave-pix"></div>
+        <button class="btn-green" style="padding:10px; margin-bottom:20px" onclick="salvarChave()">SALVAR CHAVE</button>
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #ddd; margin-bottom:20px;">
-            <div class="input-group"><input type="text" id="adm-nome" placeholder="Nome do Produto"></div>
+            <div class="input-group"><input type="text" id="adm-nome" placeholder="Produto"></div>
             <div class="input-group"><select id="adm-cat-select"></select></div>
-            <div class="input-group">
-                <select id="adm-tipo">
-                    <option value="un">Unidade (UN)</option>
-                    <option value="kg">Quilo (KG)</option>
-                </select>
-            </div>
-            <div class="input-group"><input type="number" id="adm-preco" placeholder="Preço (Ex: 5.99)"></div>
+            <div class="input-group"><select id="adm-tipo"><option value="un">UN</option><option value="kg">KG</option></select></div>
+            <div class="input-group"><input type="number" id="adm-preco" placeholder="Preço"></div>
             <button class="btn-green" onclick="admAdicionar()">SALVAR PRODUTO</button>
         </div>
         <div id="adm-lista-geral"></div>
-        <button class="btn-green" style="background:#333; margin-top:20px" onclick="sairAdmin()">SAIR E VOLTAR AO LOGIN</button>
+        <button class="btn-green" style="background:#333; margin-top:20px" onclick="sairAdmin()">SAIR</button>
     </div>
 </section>
 
 <nav class="bottom-nav" id="main-nav" style="display:none;">
-    <button class="nav-item" id="n-h" onclick="irPara('screen-home')">LOJA</button>
-    <button class="nav-item" id="n-c" onclick="irPara('screen-cart')">CARRINHO (<span id="count">0</span>)</button>
+    <button class="nav-item" onclick="irPara('screen-home')">LOJA</button>
+    <button class="nav-item" onclick="irPara('screen-cart')">CARRINHO (<span id="count">0</span>)</button>
     <button class="nav-item" onclick="logout()">SAIR</button>
 </nav>
 
 <script>
     const SENHA_MESTRA = "123";
     const CATEGORIAS = ["Mercearia", "Açougue", "Hortifrúti", "Bebidas", "Limpeza", "Padaria", "Fiambreria"];
-    
+    const JUROS_MES = 0.0398; // 3.98%
+
     let estoque = JSON.parse(localStorage.getItem('medela_estoque_v3')) || [];
     let carrinho = [];
     let userAtivo = JSON.parse(localStorage.getItem('medela_user_logado'));
     let isAdmin = localStorage.getItem('admin_session') === 'true';
-    let chavePix = localStorage.getItem('medela_chave_pix') || "Defina a chave no ADM";
+    let chavePix = localStorage.getItem('medela_chave_pix') || "Defina no Admin";
     let categoriaSelecionada = CATEGORIAS[0];
+    let metodoPagamento = "";
+    let subtotalGeral = 0;
 
     window.onload = () => {
-        popularSelectCategorias();
+        popularCategorias();
         if (isAdmin) irPara('screen-admin');
         else if (userAtivo) { logarInterface(); irPara('screen-home'); }
         else irPara('screen-login');
     };
 
-    function popularSelectCategorias() {
-        const sel = document.getElementById('adm-cat-select');
-        sel.innerHTML = CATEGORIAS.map(c => `<option value="${c}">${c}</option>`).join('');
+    function popularCategorias() {
+        document.getElementById('adm-cat-select').innerHTML = CATEGORIAS.map(c => `<option value="${c}">${c}</option>`).join('');
         document.getElementById('adm-chave-pix').value = chavePix;
     }
 
@@ -150,60 +157,72 @@
         document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.getElementById('main-nav').style.display = (id === 'screen-home' || id === 'screen-cart') ? 'flex' : 'none';
-        if(id === 'screen-home') { renderCategorias(); renderHome(); }
+        if(id === 'screen-home') { renderHome(); }
         if(id === 'screen-cart') renderCart();
         if(id === 'screen-admin') renderAdmin();
     }
 
-    // --- PIX FUNCTIONS ---
-    function salvarChavePix() {
+    // --- LOGICA DE PAGAMENTO ---
+    function setMetodo(m) {
+        metodoPagamento = m;
+        document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById(`btn-${m}`).classList.add('selected');
+        
+        document.querySelectorAll('.info-box').forEach(box => box.style.display = 'none');
+        
+        if(m === 'pix') {
+            document.getElementById('info-pix').style.display = 'block';
+            document.getElementById('chave-display').innerText = chavePix;
+        } else if (m === 'credito') {
+            document.getElementById('info-credito').style.display = 'block';
+            gerarParcelas();
+        } else if (m === 'dinheiro') {
+            document.getElementById('info-dinheiro').style.display = 'block';
+        }
+    }
+
+    function gerarParcelas() {
+        const select = document.getElementById('select-parcelas');
+        select.innerHTML = "";
+        for(let i=1; i<=12; i++) {
+            // Cálculo: Total * (1 + (Juros * meses))
+            let totalComJuros = subtotalGeral * (1 + (JUROS_MES * (i-1)));
+            if(i === 1) totalComJuros = subtotalGeral; // 1x sem juros (ou conforme sua regra)
+            
+            let valorParcela = totalComJuros / i;
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.text = `${i}x de R$ ${valorParcela.toFixed(2)} (Total: R$ ${totalComJuros.toFixed(2)})`;
+            select.appendChild(opt);
+        }
+    }
+
+    function salvarChave() {
         chavePix = document.getElementById('adm-chave-pix').value;
         localStorage.setItem('medela_chave_pix', chavePix);
-        alert("Chave Pix Atualizada!");
+        alert("Chave salva!");
     }
 
-    function mostrarPix() {
-        document.getElementById('pix-area').style.display = "block";
-        document.getElementById('chave-pix-display').innerText = chavePix;
-        document.getElementById('btn-finalizar-pedido').style.display = "none";
-        document.getElementById('btn-whats').style.display = "block";
-    }
-
-    function copiarPix() {
-        navigator.clipboard.writeText(chavePix);
-        alert("Chave Copiada!");
-    }
+    function copiarPix() { navigator.clipboard.writeText(chavePix); alert("Copiado!"); }
 
     // --- LOJA / CARRINHO ---
-    function renderCategorias() {
-        const container = document.getElementById('cat-list');
-        container.innerHTML = CATEGORIAS.map(c => `
-            <div class="cat-pill ${categoriaSelecionada === c ? 'active-cat' : ''}" onclick="setCat('${c}')">${c}</div>
-        `).join('');
-    }
-
-    function setCat(c) { categoriaSelecionada = c; renderCategorias(); renderHome(); }
-
     function renderHome(busca = "") {
+        document.getElementById('cat-list').innerHTML = CATEGORIAS.map(c => `<div class="cat-pill ${categoriaSelecionada===c?'active-cat':''}" onclick="setCat('${c}')">${c}</div>`).join('');
         const grid = document.getElementById('product-grid');
-        const filtrados = estoque.filter(p => p.cat === categoriaSelecionada && p.n.toLowerCase().includes(busca.toLowerCase()));
-        grid.innerHTML = filtrados.map(p => `
+        grid.innerHTML = estoque.filter(p => p.cat === categoriaSelecionada && p.n.toLowerCase().includes(busca.toLowerCase())).map(p => `
             <div class="item-card">
-                <b style="font-size:14px; display:block; height:35px">${p.n}</b>
-                <span style="color:var(--primary-green); font-weight:bold">R$ ${p.p.toFixed(2)}</span>
-                <div style="display:flex; align-items:center; justify-content:center; gap:5px; margin:8px 0">
-                    <input type="number" id="qty-${p.id}" value="1" step="${p.tipo==='kg'?'0.1':'1'}" style="width:50px; text-align:center">
-                    <small>${p.tipo}</small>
-                </div>
-                <button onclick="addCart(${p.id})" style="background:var(--orange-header); color:white; border:none; padding:8px; border-radius:5px; width:100%; cursor:pointer">ADICIONAR</button>
+                <b>${p.n}</b><br><span style="color:var(--primary-green)">R$ ${p.p.toFixed(2)}</span>
+                <div style="margin:8px 0"><input type="number" id="qty-${p.id}" value="1" step="${p.tipo==='kg'?'0.1':'1'}" style="width:50px"> ${p.tipo}</div>
+                <button onclick="addCart(${p.id})" style="background:var(--orange-header); color:white; border:none; padding:8px; border-radius:5px; width:100%">ADD</button>
             </div>
         `).join('');
     }
 
+    function setCat(c) { categoriaSelecionada = c; renderHome(); }
+
     function addCart(id) {
         const p = estoque.find(x => x.id === id);
         const q = parseFloat(document.getElementById(`qty-${id}`).value);
-        if(q <= 0) return;
         carrinho.push({...p, qtd: q, sub: p.p * q});
         document.getElementById('count').innerText = carrinho.length;
         alert("Adicionado!");
@@ -211,95 +230,67 @@
 
     function renderCart() {
         const container = document.getElementById('cart-items-list');
-        document.getElementById('pix-area').style.display = "none";
-        document.getElementById('btn-finalizar-pedido').style.display = "block";
-        document.getElementById('btn-whats').style.display = "none";
-
         if(carrinho.length === 0) {
-            container.innerHTML = "<center style='margin-top:50px'>Carrinho vazio</center>";
+            container.innerHTML = "<center style='margin-top:50px'>Vazio</center>";
             document.getElementById('cart-footer').style.display = "none";
             return;
         }
-        let total = 0;
-        container.innerHTML = carrinho.map((it, i) => {
-            total += it.sub;
-            return `
-                <div class="list-item">
-                    <div><b>${it.n}</b><br><small>${it.qtd}${it.tipo} x R$ ${it.p.toFixed(2)}</small></div>
-                    <div style="text-align:right"><b>R$ ${it.sub.toFixed(2)}</b><br><span onclick="remCart(${i})" style="color:red; font-size:11px">Remover</span></div>
-                </div>
-            `;
-        }).join('');
-        document.getElementById('total-val').innerText = "R$ " + (total + 7).toFixed(2);
+        subtotalGeral = carrinho.reduce((acc, it) => acc + it.sub, 0) + 7; // +7 taxa entrega
+        container.innerHTML = carrinho.map((it, i) => `<div class="list-item"><div><b>${it.n}</b><br>${it.qtd}${it.tipo}</div><div>R$ ${it.sub.toFixed(2)} <span onclick="remCart(${i})" style="color:red">X</span></div></div>`).join('');
+        document.getElementById('total-val').innerText = subtotalGeral.toFixed(2);
         document.getElementById('cart-footer').style.display = "block";
+        metodoPagamento = ""; // Reseta ao abrir
     }
 
-    function remCart(i) {
-        carrinho.splice(i,1);
-        document.getElementById('count').innerText = carrinho.length;
-        renderCart();
-    }
-
-    // --- ADMIN / LOGIN / UTIL ---
-    function acessoAdmin() {
-        if(prompt("Senha:") === SENHA_MESTRA) { localStorage.setItem('admin_session', 'true'); isAdmin = true; irPara('screen-admin'); }
-        else alert("Senha incorreta");
-    }
-
-    function sairAdmin() { localStorage.removeItem('admin_session'); isAdmin = false; location.reload(); }
-
-    function fazerLogin() {
-        const c = document.getElementById('login-cpf').value;
-        const dados = localStorage.getItem(`cliente_${c}`);
-        if(dados) { userAtivo = JSON.parse(dados); localStorage.setItem('medela_user_logado', JSON.stringify(userAtivo)); logarInterface(); irPara('screen-home'); }
-        else alert("CPF não encontrado!");
-    }
-
-    function salvarCadastro() {
-        const n = document.getElementById('reg-nome').value;
-        const c = document.getElementById('reg-cpf').value;
-        const e = document.getElementById('reg-end').value;
-        if(!n || c.length < 14) return alert("Dados incompletos!");
-        localStorage.setItem(`cliente_${c}`, JSON.stringify({nome: n, cpf: c, end: e}));
-        alert("Cadastrado!"); irPara('screen-login');
-    }
-
-    function logarInterface() { document.getElementById('user-display').innerText = `Olá, ${userAtivo.nome.split(' ')[0]}`; }
-
-    function renderAdmin(busca = "") {
-        const lista = document.getElementById('adm-lista-geral');
-        lista.innerHTML = estoque.filter(p => p.n.toLowerCase().includes(busca.toLowerCase())).map(p => `
-            <div class="list-item">
-                <span><b>${p.n}</b> (${p.cat})<br>R$ ${p.p.toFixed(2)} / ${p.tipo}</span>
-                <button onclick="admRemover(${p.id})" style="background:red; color:white; border:none; padding:8px; border-radius:5px">EXCLUIR</button>
-            </div>
-        `).join('');
-    }
-
-    function admAdicionar() {
-        const n = document.getElementById('adm-nome').value, c = document.getElementById('adm-cat-select').value, t = document.getElementById('adm-tipo').value, p = parseFloat(document.getElementById('adm-preco').value);
-        if(!n || !p) return alert("Preencha tudo!");
-        estoque.push({id: Date.now(), n, cat: c, tipo: t, p});
-        localStorage.setItem('medela_estoque_v3', JSON.stringify(estoque));
-        renderAdmin(); alert("Salvo!");
-    }
-
-    function admRemover(id) { if(confirm("Excluir?")) { estoque = estoque.filter(p => p.id !== id); localStorage.setItem('medela_estoque_v3', JSON.stringify(estoque)); renderAdmin(); } }
-
-    function mascaraCPF(i) {
-        let v = i.value.replace(/\D/g, "");
-        v = v.replace(/(\d{3})(\d)/, "$1.$2"); v = v.replace(/(\d{3})(\d)/, "$1.$2"); v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-        i.value = v;
-    }
-
-    function logout() { localStorage.removeItem('medela_user_logado'); location.reload(); }
+    function remCart(i) { carrinho.splice(i,1); renderCart(); document.getElementById('count').innerText = carrinho.length; }
 
     function enviarWhatsApp() {
-        let msg = `*PEDIDO PAGO VIA PIX*\nCliente: ${userAtivo.nome}\nEndereço: ${userAtivo.end}\n\n`;
+        if(!metodoPagamento) return alert("Escolha o pagamento!");
+        
+        let resumoPagamento = `Pagamento: ${metodoPagamento.toUpperCase()}`;
+        let totalFinal = subtotalGeral;
+
+        if(metodoPagamento === 'credito') {
+            const parcelas = document.getElementById('select-parcelas').value;
+            const textoParcela = document.getElementById('select-parcelas').options[document.getElementById('select-parcelas').selectedIndex].text;
+            resumoPagamento = `Pagamento: CRÉDITO (${textoParcela})`;
+        } else if(metodoPagamento === 'dinheiro') {
+            const troco = document.getElementById('troco-para').value;
+            resumoPagamento += troco ? ` (Troco para R$ ${troco})` : ` (Sem troco)`;
+        }
+
+        let msg = `*PEDIDO - MEDELA*\nCliente: ${userAtivo.nome}\nEndereço: ${userAtivo.end}\n\n`;
         carrinho.forEach(i => msg += `- ${i.n} (${i.qtd}${i.tipo}): R$ ${i.sub.toFixed(2)}\n`);
-        msg += `\n*TOTAL: ${document.getElementById('total-val').innerText}*\n\n*Estou enviando o comprovante em anexo abaixo:*`;
+        msg += `\n*Taxa Entrega: R$ 7,00*`;
+        msg += `\n*TOTAL: R$ ${totalFinal.toFixed(2)}*`;
+        msg += `\n\n*${resumoPagamento}*`;
+        
         window.open(`https://api.whatsapp.com/send?phone=5521977126638&text=${encodeURIComponent(msg)}`);
     }
+
+    // --- ADMIN / AUX ---
+    function acessoAdmin() { if(prompt("Senha:") === SENHA_MESTRA) { localStorage.setItem('admin_session','true'); isAdmin=true; irPara('screen-admin'); } }
+    function sairAdmin() { localStorage.removeItem('admin_session'); location.reload(); }
+    function logout() { localStorage.removeItem('medela_user_logado'); location.reload(); }
+    function mascaraCPF(i) { i.value = i.value.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2"); }
+    function fazerLogin() { 
+        const c = document.getElementById('login-cpf').value;
+        const d = localStorage.getItem(`cliente_${c}`);
+        if(d) { userAtivo=JSON.parse(d); localStorage.setItem('medela_user_logado', JSON.stringify(userAtivo)); irPara('screen-home'); } else alert("Cadastre-se!");
+    }
+    function salvarCadastro() {
+        const n=document.getElementById('reg-nome').value, c=document.getElementById('reg-cpf').value, e=document.getElementById('reg-end').value;
+        localStorage.setItem(`cliente_${c}`, JSON.stringify({nome:n, cpf:c, end:e})); irPara('screen-login');
+    }
+    function renderAdmin(busca="") {
+        document.getElementById('adm-lista-geral').innerHTML = estoque.filter(p=>p.n.toLowerCase().includes(busca.toLowerCase())).map(p=>`<div class="list-item"><span>${p.n}</span><button onclick="admRemover(${p.id})">X</button></div>`).join('');
+    }
+    function admAdicionar() {
+        const n=document.getElementById('adm-nome').value, c=document.getElementById('adm-cat-select').value, t=document.getElementById('adm-tipo').value, p=parseFloat(document.getElementById('adm-preco').value);
+        estoque.push({id:Date.now(), n, cat:c, tipo:t, p}); localStorage.setItem('medela_estoque_v3', JSON.stringify(estoque)); renderAdmin();
+    }
+    function admRemover(id) { estoque=estoque.filter(p=>p.id!==id); localStorage.setItem('medela_estoque_v3', JSON.stringify(estoque)); renderAdmin(); }
+
 </script>
 </body>
 </html>
