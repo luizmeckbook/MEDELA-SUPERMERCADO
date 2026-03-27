@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDELA SUPERMERCADO - PRO</title>
+    <title>MEDELA SUPERMERCADO - PRO V3</title>
     <style>
         :root { --primary-green: #00a859; --orange-header: #f37021; --bg-gray: #f4f4f4; --text-dark: #333; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-gray); margin: 0; color: var(--text-dark); }
@@ -12,22 +12,18 @@
         .active { display: flex !important; }
         .container { padding: 20px; max-width: 450px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         
-        /* Header & Nav */
-        .header-orange { background: var(--orange-header); padding: 15px 20px; color: white; border-radius: 0 0 20px 20px; position: sticky; top: 0; z-index: 100; }
+        .header-orange { background: var(--orange-header); padding: 15px 20px; color: white; border-radius: 0 0 20px 20px; position: sticky; top: 0; z-index: 100; text-align: center;}
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1000; left: 50%; transform: translateX(-50%); }
         .nav-item { font-size: 11px; color: #aaa; text-align: center; border: none; background: none; font-weight: bold; cursor: pointer; }
         .nav-active { color: var(--primary-green); }
 
-        /* Categorias Scroll */
-        .cat-container { display: flex; overflow-x: auto; padding: 10px; gap: 8px; background: white; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .cat-container { display: flex; overflow-x: auto; padding: 10px; gap: 8px; background: white; white-space: nowrap; }
         .cat-pill { padding: 8px 16px; background: #f0f0f0; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; border: 1px solid #ddd; }
         .cat-pill.active-cat { background: var(--primary-green); color: white; border-color: var(--primary-green); }
 
-        /* Grid */
         .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; padding-bottom: 150px; }
         .item-card { background: white; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* Inputs */
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; }
         .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
@@ -102,7 +98,7 @@
         </div>
         <input type="text" placeholder="🔍 Buscar para excluir..." oninput="renderAdmin(this.value)" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid var(--orange-header);">
         <div id="adm-lista-geral"></div>
-        <button class="btn-green" style="background:#333; margin-top:20px" onclick="location.reload()">SAIR E VOLTAR AO LOGIN</button>
+        <button class="btn-green" style="background:#333; margin-top:20px" onclick="sairAdmin()">SAIR E VOLTAR AO LOGIN</button>
     </div>
 </section>
 
@@ -119,12 +115,20 @@
     let estoque = JSON.parse(localStorage.getItem('medela_estoque_v3')) || [];
     let carrinho = [];
     let userAtivo = JSON.parse(localStorage.getItem('medela_user_logado'));
+    let isAdmin = localStorage.getItem('admin_session') === 'true'; // Verifica se o ADM está logado
     let categoriaSelecionada = CATEGORIAS[0];
 
     window.onload = () => {
         popularSelectCategorias();
-        if(userAtivo) { logarInterface(); irPara('screen-home'); } 
-        else { irPara('screen-login'); }
+        // Lógica de Redirecionamento ao atualizar
+        if (isAdmin) {
+            irPara('screen-admin');
+        } else if (userAtivo) {
+            logarInterface();
+            irPara('screen-home');
+        } else {
+            irPara('screen-login');
+        }
     };
 
     function popularSelectCategorias() {
@@ -236,10 +240,20 @@
         renderCart();
     }
 
-    // --- ADMIN ---
+    // --- ADMIN (CORRIGIDO) ---
     function acessoAdmin() {
-        if(prompt("Senha:") === SENHA_MESTRA) irPara('screen-admin');
+        if(prompt("Senha:") === SENHA_MESTRA) {
+            localStorage.setItem('admin_session', 'true'); // Cria a sessão
+            isAdmin = true;
+            irPara('screen-admin');
+        }
         else alert("Senha incorreta");
+    }
+
+    function sairAdmin() {
+        localStorage.removeItem('admin_session'); // Deleta a sessão
+        isAdmin = false;
+        location.reload(); // Recarrega para voltar ao login limpo
     }
 
     function renderAdmin(busca = "") {
