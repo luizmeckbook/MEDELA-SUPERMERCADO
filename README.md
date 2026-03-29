@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDELA V17 - GESTÃO TOTAL</title>
+    <title>MEDELA V18 - SUPORTE PRO</title>
     <style>
         :root { --green: #00a859; --orange: #f37021; --gray: #f4f4f4; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gray); margin: 0; padding: 0; }
@@ -12,222 +12,185 @@
         .container { padding: 20px; max-width: 450px; margin: 0 auto; box-sizing: border-box; }
         .header { background: var(--orange); padding: 15px; color: white; text-align: center; border-radius: 0 0 20px 20px; position: sticky; top: 0; z-index: 100; }
         
-        /* Estilo Cards e Inputs */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; padding-bottom: 120px; }
-        .card { background: white; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card img { width: 100%; height: 80px; object-fit: contain; }
-        .btn { background: var(--green); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
-        .btn-edit { background: #2196F3; padding: 5px; font-size: 10px; margin-right: 5px; }
-        .btn-del { background: #ff4444; padding: 5px; font-size: 10px; }
-        .input-group { margin-bottom: 10px; width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        /* CHAT ESTILO WHATSAPP */
+        .chat-container { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; position: relative; height: 70vh; overflow: hidden; }
+        .chat-msgs { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .bubble { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 14px; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .bubble-user { background: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; }
+        .bubble-adm { background: #fff; align-self: flex-start; border-top-left-radius: 0; }
+        .bubble img { max-width: 100%; border-radius: 5px; margin-top: 5px; display: block; }
         
-        /* ADM e Navegação */
-        .cat-bar { display: flex; overflow-x: auto; padding: 10px; gap: 8px; background: white; white-space: nowrap; scrollbar-width: none; }
-        .cat-item { padding: 8px 15px; background: #eee; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .cat-item.active-cat { background: var(--green); color: white; }
+        .chat-input-area { background: #f0f0f0; padding: 10px; display: flex; gap: 8px; align-items: center; border-top: 1px solid #ddd; }
+        .chat-input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+        
+        /* ADM LISTA DE ABAS */
+        .chat-tab { background: white; padding: 15px; margin-bottom: 5px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--orange); }
+        .badge { background: var(--orange); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+
+        .btn { background: var(--green); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
         .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; left: 50%; transform: translateX(-50%); z-index: 1000; }
-        .admin-item { background: white; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--orange); }
+        .input-group { margin-bottom: 10px; width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <section id="scr-login" class="app-screen">
     <div class="container">
-        <div style="text-align: center; margin: 40px 0;">
-            <h1 style="color: var(--green); margin:0;">MEDELA</h1>
-            <p style="color:var(--orange); font-weight:bold;">SUPERMERCADO</p>
-        </div>
-        <input type="text" id="l-cpf" placeholder="Seu CPF" class="input-group" oninput="maskCPF(this)" maxlength="14">
-        <input type="password" id="l-pass" placeholder="Sua Senha" class="input-group">
-        <button class="btn" onclick="login()">ENTRAR NO MERCADO</button>
-        <p style="text-align:center; font-size:13px; margin-top:20px;">Novo cliente? <span style="color:var(--orange); cursor:pointer; font-weight:bold;" onclick="go('scr-reg')">Criar Conta</span></p>
-        <button class="btn" style="background:#444; margin-top:20px;" onclick="abrirSuporte('visitante')">SUPORTE</button>
-        <p style="text-align:center; font-size:10px; color:#ccc; margin-top:50px;" onclick="askAdmin()">ADM</p>
-    </div>
-</section>
-
-<section id="scr-reg" class="app-screen">
-    <div class="header"><h2>Cadastro</h2></div>
-    <div class="container">
-        <input type="text" id="r-nome" placeholder="Nome Completo" class="input-group">
-        <input type="text" id="r-cpf" placeholder="CPF" class="input-group" oninput="maskCPF(this)" maxlength="14">
-        <input type="password" id="r-pass" placeholder="Senha de Acesso" class="input-group">
-        <button class="btn" onclick="register()">FINALIZAR E ENTRAR</button>
-        <button class="btn" style="background:#888" onclick="go('scr-login')">VOLTAR</button>
+        <h1 style="text-align:center; color:var(--green)">MEDELA</h1>
+        <input type="text" id="l-cpf" placeholder="CPF" class="input-group" oninput="maskCPF(this)">
+        <input type="password" id="l-pass" placeholder="Senha" class="input-group">
+        <button class="btn" onclick="login()">ENTRAR</button>
+        <button class="btn" style="background:#444; margin-top:10px;" onclick="abrirSuporteCliente()">SUPORTE / ESQUECI SENHA</button>
+        <p onclick="askAdmin()" style="text-align:center; font-size:10px; color:#ccc; margin-top:50px;">ADM</p>
     </div>
 </section>
 
 <section id="scr-home" class="app-screen">
-    <div class="header">
-        <h3 id="u-name" style="margin:0">Olá!</h3>
-        <input type="text" placeholder="🔍 Buscar no mercado..." style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none;" oninput="renderHome(this.value)">
+    <div class="header"><h3 id="u-name">Medela Mercado</h3></div>
+    <div class="container">
+        <p>Bem-vindo à nossa loja!</p>
+        <div id="p-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
     </div>
-    <div id="cat-loja" class="cat-bar"></div>
-    <div id="p-grid" class="grid"></div>
 </section>
 
-<section id="scr-admin" class="app-screen">
-    <div class="header"><h2>Painel Administrativo</h2></div>
-    <div class="cat-bar">
-        <div class="cat-item active-cat" id="tab-p" onclick="abaAdmin('estoque')">📦 Estoque</div>
-        <div class="cat-item" id="tab-u" onclick="abaAdmin('usuarios')">👥 Usuários</div>
-    </div>
-    
-    <div class="container" id="adm-content">
-        <div style="background:white; padding:15px; border-radius:10px; margin-bottom:20px;">
-            <h4 style="margin-top:0">Novo/Editar Produto</h4>
-            <input type="hidden" id="edit-id">
-            <input type="text" id="a-nome" placeholder="Nome do Produto" class="input-group">
-            <input type="number" id="a-preco" placeholder="Preço (ex: 10.50)" class="input-group" step="0.01">
-            <select id="a-tipo" class="input-group">
-                <option value="UN">Unidade (UN)</option>
-                <option value="KG">Quilo (KG)</option>
-            </select>
-            <select id="a-cat" class="input-group">
-                <option>Mercearia</option><option>Açougue</option><option>Hortifrúti</option>
-                <option>Bebidas</option><option>Limpeza</option><option>Padaria</option>
-            </select>
-            <button class="btn" onclick="salvarProduto()">SALVAR NO ESTOQUE</button>
-            <button id="btn-cancel-edit" class="btn" style="background:#888; display:none;" onclick="limparFormProd()">CANCELAR EDIÇÃO</button>
+<section id="scr-chat" class="app-screen">
+    <div class="header">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button onclick="voltarChat()" style="background:none; border:none; color:white; font-size:20px;">❮</button>
+            <span id="chat-with-name">Suporte Medela</span>
+            <span></span>
         </div>
-        <div id="adm-list-estoque"></div>
     </div>
-    <button class="btn" style="background:#333; width:90%; margin: 10px auto;" onclick="sairAdmin()">SAIR DO MODO ADM</button>
+    <div class="chat-container">
+        <div id="chat-msgs" class="chat-msgs"></div>
+        <div class="chat-input-area">
+            <label style="cursor:pointer; font-size:20px;">📷<input type="file" hidden accept="image/*" onchange="enviarMidia(this)"></label>
+            <input type="text" id="chat-input" class="chat-input" placeholder="Digite uma mensagem...">
+            <button onclick="enviarTexto()" style="background:var(--green); color:white; border:none; border-radius:50%; width:35px; height:35px;">➔</button>
+        </div>
+    </div>
+</section>
+
+<section id="scr-admin-chats" class="app-screen">
+    <div class="header"><h2>Conversas Ativas</h2></div>
+    <div class="container" id="lista-abas-chat"></div>
+    <button class="btn" style="background:#333; width:90%; margin:20px auto;" onclick="location.reload()">SAIR ADM</button>
 </section>
 
 <nav class="nav" id="bot-nav" style="display:none;">
-    <button onclick="go('scr-home')">🏠 LOJA</button>
-    <button onclick="logout()">🚪 SAIR</button>
+    <button onclick="go('scr-home')">LOJA</button>
+    <button onclick="abrirSuporteCliente()">SUPORTE</button>
+    <button onclick="logout()">SAIR</button>
 </nav>
 
 <script>
-    const CATS = ["Mercearia", "Açougue", "Hortifrúti", "Bebidas", "Limpeza", "Padaria"];
-    let db = JSON.parse(localStorage.getItem('m_db')) || [];
+    let db_chats = JSON.parse(localStorage.getItem('m_chats_v18')) || {};
     let user = JSON.parse(localStorage.getItem('m_user'));
-    let isAdmin = localStorage.getItem('m_is_admin') === 'true';
-    let curCat = "Mercearia";
-
-    window.onload = () => {
-        if (isAdmin) { go('scr-admin'); abaAdmin('estoque'); }
-        else if (user) { go('scr-home'); }
-        else { go('scr-login'); }
-    };
+    let isAdmin = false;
+    let chatAtivoCPF = "";
 
     function go(id) {
         document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.getElementById('bot-nav').style.display = (id === 'scr-home') ? 'flex' : 'none';
-        if(id === 'scr-home') renderHome();
     }
 
-    // --- LOGICA DE PRODUTOS (ADM) ---
-    function salvarProduto() {
-        const id = document.getElementById('edit-id').value;
-        const nome = document.getElementById('a-nome').value;
-        const preco = parseFloat(document.getElementById('a-preco').value);
-        const tipo = document.getElementById('a-tipo').value;
-        const cat = document.getElementById('a-cat').value;
-
-        if(!nome || isNaN(preco)) return alert("Preencha nome e preço!");
-
-        if(id) { // EDITAR
-            const index = db.findIndex(p => p.id == id);
-            db[index] = { id: Number(id), nome, preco, tipo, cat };
-        } else { // NOVO
-            db.push({ id: Date.now(), nome, preco, tipo, cat });
+    // --- LÓGICA DO SUPORTE ---
+    function abrirSuporteCliente() {
+        if(!user) {
+            let tempCPF = prompt("Para suporte, digite seu CPF:");
+            if(!tempCPF) return;
+            chatAtivoCPF = "VISITANTE_" + tempCPF.replace(/\D/g, "");
+        } else {
+            chatAtivoCPF = user.cpf;
         }
-
-        localStorage.setItem('m_db', JSON.stringify(db));
-        limparFormProd();
-        renderEstoqueAdm();
+        document.getElementById('chat-with-name').innerText = "Suporte Medela";
+        renderizarMensagens();
+        go('scr-chat');
     }
 
-    function editarProd(id) {
-        const p = db.find(x => x.id == id);
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('a-nome').value = p.nome;
-        document.getElementById('a-preco').value = p.preco;
-        document.getElementById('a-tipo').value = p.tipo;
-        document.getElementById('a-cat').value = p.cat;
-        document.getElementById('btn-cancel-edit').style.display = 'block';
+    function abrirChatAdm(cpf) {
+        chatAtivoCPF = cpf;
+        document.getElementById('chat-with-name').innerText = "Cliente: " + cpf;
+        renderizarMensagens();
+        go('scr-chat');
     }
 
-    function deletarProd(id) {
-        if(confirm("Excluir este produto?")) {
-            db = db.filter(p => p.id != id);
-            localStorage.setItem('m_db', JSON.stringify(db));
-            renderEstoqueAdm();
+    function enviarTexto() {
+        let input = document.getElementById('chat-input');
+        if(!input.value) return;
+        pushMsg({ tipo: 'texto', conteudo: input.value, remetente: isAdmin ? 'adm' : 'user' });
+        input.value = "";
+    }
+
+    function enviarMidia(input) {
+        if(input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                pushMsg({ tipo: 'img', conteudo: e.target.result, remetente: isAdmin ? 'adm' : 'user' });
+            };
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function limparFormProd() {
-        document.getElementById('edit-id').value = "";
-        document.getElementById('a-nome').value = "";
-        document.getElementById('a-preco').value = "";
-        document.getElementById('btn-cancel-edit').style.display = 'none';
+    function pushMsg(msgObj) {
+        if(!db_chats[chatAtivoCPF]) db_chats[chatAtivoCPF] = [];
+        db_chats[chatAtivoCPF].push(msgObj);
+        localStorage.setItem('m_chats_v18', JSON.stringify(db_chats));
+        renderizarMensagens();
     }
 
-    function renderEstoqueAdm() {
-        const list = document.getElementById('adm-list-estoque');
-        list.innerHTML = db.map(p => `
-            <div class="admin-item">
-                <div><b>${p.nome}</b><br><small>${p.cat} - R$ ${p.preco.toFixed(2)}/${p.tipo}</small></div>
-                <div>
-                    <button class="btn btn-edit" onclick="editarProd(${p.id})">EDITAR</button>
-                    <button class="btn btn-del" onclick="deletarProd(${p.id})">X</button>
-                </div>
+    function renderizarMensagens() {
+        let area = document.getElementById('chat-msgs');
+        let msgs = db_chats[chatAtivoCPF] || [];
+        area.innerHTML = msgs.map(m => `
+            <div class="bubble ${m.remetente === (isAdmin ? 'adm' : 'user') ? 'bubble-user' : 'bubble-adm'}">
+                ${m.tipo === 'texto' ? m.conteudo : `<img src="${m.conteudo}">`}
             </div>
         `).join('');
+        area.scrollTop = area.scrollHeight;
     }
 
-    // --- LOJA CLIENTE ---
-    function setCatLoja(c) { curCat = c; renderHome(); }
+    function voltarChat() {
+        if(isAdmin) { renderAbasAdm(); go('scr-admin-chats'); }
+        else { go(user ? 'scr-home' : 'scr-login'); }
+    }
 
-    function renderHome(s = "") {
-        document.getElementById('u-name').innerText = "Olá, " + user.nome.split(' ')[0];
-        document.getElementById('cat-loja').innerHTML = CATS.map(c => `<div class="cat-item ${c===curCat?'active-cat':''}" onclick="setCatLoja('${c}')">${c}</div>`).join('');
-        
-        const filtered = db.filter(p => p.cat === curCat && p.nome.toLowerCase().includes(s.toLowerCase()));
-        document.getElementById('p-grid').innerHTML = filtered.map(p => `
-            <div class="card">
-                <img src="https://via.placeholder.com/80?text=${p.nome[0]}">
-                <b style="font-size:12px;">${p.nome}</b>
-                <span style="color:var(--green); font-size:14px;">R$ ${p.preco.toFixed(2)}</span>
-                <button class="btn" style="font-size:10px; padding:5px;">ADICIONAR</button>
+    // --- ADMIN ABAS ---
+    function renderAbasAdm() {
+        isAdmin = true;
+        let lista = document.getElementById('lista-abas-chat');
+        let cpfs = Object.keys(db_chats);
+        lista.innerHTML = cpfs.map(cpf => `
+            <div class="chat-tab" onclick="abrirChatAdm('${cpf}')">
+                <span><b>${cpf}</b></span>
+                <span class="badge">${db_chats[cpf].length} msgs</span>
             </div>
-        `).join('');
+        `).join('') || "<p style='text-align:center'>Nenhuma conversa ainda.</p>";
     }
 
-    // --- AUTH ---
+    // --- SISTEMA BASE ---
     function login() {
-        const c = document.getElementById('l-cpf').value, p = document.getElementById('l-pass').value;
-        const s = localStorage.getItem(`u_${c}`);
+        let c = document.getElementById('l-cpf').value;
+        let p = document.getElementById('l-pass').value;
+        let s = localStorage.getItem('u_' + c);
         if(s && JSON.parse(s).senha === p) {
             user = JSON.parse(s);
             localStorage.setItem('m_user', s);
             go('scr-home');
-        } else alert("CPF ou Senha incorretos!");
+        } else alert("CPF ou Senha inválidos.");
     }
 
-    function register() {
-        const n = document.getElementById('r-nome').value, c = document.getElementById('r-cpf').value, p = document.getElementById('r-pass').value;
-        if(!n || !c || !p) return alert("Preencha tudo!");
-        const d = { nome: n, cpf: c, senha: p };
-        localStorage.setItem(`u_${c}`, JSON.stringify(d));
-        user = d; localStorage.setItem('m_user', JSON.stringify(d));
-        go('scr-home');
+    function askAdmin() {
+        if(prompt("Senha Mestra:") === "123") {
+            isAdmin = true;
+            renderAbasAdm();
+            go('scr-admin-chats');
+        }
     }
 
-    function abaAdmin(t) {
-        document.getElementById('adm-list-estoque').style.display = t === 'estoque' ? 'block' : 'none';
-        if(t === 'estoque') renderEstoqueAdm();
-        // Lógica de usuários (conforme v16) pode ser chamada aqui
-    }
-
-    function maskCPF(i) { let v = i.value.replace(/\D/g,""); v = v.replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d{1,2})$/,"$1-$2"); i.value = v; }
-    function askAdmin() { if(prompt("Senha:")==="123") { localStorage.setItem('m_is_admin','true'); location.reload(); } }
     function logout() { localStorage.removeItem('m_user'); location.reload(); }
-    function sairAdmin() { localStorage.removeItem('m_is_admin'); location.reload(); }
+    function maskCPF(i) { let v = i.value.replace(/\D/g,""); v = v.replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d{1,2})$/,"$1-$2"); i.value = v; }
 </script>
 </body>
 </html>
