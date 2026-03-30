@@ -1,173 +1,221 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Açougue Medela</title>
+🥩 Açougue Medela — Sistema Profissional (VERSÃO 2)
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+📁 Estrutura (GitHub)
 
-<style>
-body { font-family: Arial; margin:0; background:#f5f5f5; }
-.header { background:#f58634; color:white; padding:15px; font-size:20px; }
-.card { background:white; margin:15px; padding:15px; border-radius:10px; }
-input, button { width:100%; padding:10px; margin:5px 0; }
-.menu { padding:10px; border-bottom:1px solid #eee; }
-.admin { background:#222; color:#fff; }
-</style>
-</head>
+acougue-medela/
+│
+├── index.html
+├── login.html
+├── admin.html
+│
+├── /css/style.css
+├── /js/app.js
+├── /js/auth.js
+├── /js/admin.js
+│
+├── /firebase/config.js
 
-<body>
 
-<div id="app"></div>
+---
 
-<script>
-/* 🔥 CONFIG FIREBASE */
+🔐 firebase/config.js
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const firebaseConfig = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI",
-  projectId: "COLE_AQUI"
+  apiKey: "SUA_KEY",
+  authDomain: "SEU_DOMINIO",
+  projectId: "SEU_ID",
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 
-/* 🔁 ESTADO */
-let user = null;
 
-/* 🔐 LOGIN */
-function telaLogin() {
-  document.getElementById("app").innerHTML = `
-    <div class="card">
-      <h2>Açougue Medela</h2>
-      <input id="email" placeholder="Email">
-      <input id="senha" type="password" placeholder="Senha">
-      <button onclick="login()">Entrar</button>
-      <button onclick="telaCadastro()">Criar conta</button>
-    </div>
-  `;
-}
+---
 
-function login() {
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
+🎨 css/style.css
 
-  auth.signInWithEmailAndPassword(email, senha)
-    .then(() => notificar("Login realizado"))
-    .catch(() => alert("Erro no login"));
-}
+body { font-family: Arial; margin: 0; background: #f5f5f5; }
+header { background: #b30000; color: white; padding: 15px; }
+.container { padding: 15px; }
+.produto { background: white; margin: 10px 0; padding: 10px; border-radius: 10px; }
+button { background: #b30000; color: white; border: none; padding: 8px; }
 
-/* 📝 CADASTRO */
-function telaCadastro() {
-  document.getElementById("app").innerHTML = `
-    <div class="card">
-      <h2>Cadastro</h2>
-      <input id="nome" placeholder="Nome">
-      <input id="cpf" placeholder="CPF">
-      <input id="email" placeholder="Email">
-      <input id="senha" type="password" placeholder="Senha">
-      <button onclick="cadastrar()">Cadastrar</button>
-    </div>
-  `;
-}
 
-function cadastrar() {
-  const nome = document.getElementById("nome").value;
-  const cpf = document.getElementById("cpf").value;
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
+---
 
-  auth.createUserWithEmailAndPassword(email, senha)
-    .then(userCred => {
-      db.collection("usuarios").doc(userCred.user.uid).set({
-        nome, cpf, saldo:0, admin:false
-      });
-      notificar("Conta criada!");
-    });
-}
+🔐 login.html
 
-/* 🏠 CONTA */
-function telaConta(dados) {
-  document.getElementById("app").innerHTML = `
-    <div class="header">Açougue Medela - ${dados.nome}</div>
-
-    <div class="card">
-      <h2>Saldo: R$ ${dados.saldo}</h2>
-    </div>
-
-    <div class="card">
-      <div class="menu">Cupons</div>
-      <div class="menu">Sorteios</div>
-      <div class="menu">Histórico</div>
-      <div class="menu">Meus dados</div>
-      ${dados.admin ? '<div class="menu" onclick="telaAdmin()">PAINEL ADMIN</div>' : ''}
-      <div class="menu" onclick="logout()">Sair</div>
-    </div>
-  `;
-}
-
-/* 🛠️ ADMIN */
-function telaAdmin() {
-  document.getElementById("app").innerHTML = `
-    <div class="header admin">PAINEL ADMIN</div>
-
-    <div class="card">
-      <input id="uid" placeholder="UID do usuário">
-      <input id="valor" placeholder="Adicionar saldo">
-      <button onclick="addSaldo()">Adicionar</button>
-      <button onclick="voltar()">Voltar</button>
-    </div>
-  `;
-}
-
-function addSaldo() {
-  const uid = document.getElementById("uid").value;
-  const valor = parseFloat(document.getElementById("valor").value);
-
-  db.collection("usuarios").doc(uid).update({
-    saldo: firebase.firestore.FieldValue.increment(valor)
-  });
-
-  notificar("Saldo adicionado");
-}
-
-/* 🔔 NOTIFICAÇÃO */
-function notificar(msg) {
-  alert(msg);
-}
-
-/* 🔓 LOGOUT */
-function logout() {
-  auth.signOut();
-}
-
-/* 🔁 VOLTAR */
-function voltar() {
-  carregarUsuario();
-}
-
-/* 🔄 CARREGAR USUÁRIO */
-function carregarUsuario() {
-  const uid = auth.currentUser.uid;
-
-  db.collection("usuarios").doc(uid).get()
-    .then(doc => {
-      telaConta(doc.data());
-    });
-}
-
-/* 🔁 MONITOR LOGIN */
-auth.onAuthStateChanged(u => {
-  if (u) {
-    user = u;
-    carregarUsuario();
-  } else {
-    telaLogin();
-  }
-});
-</script>
-
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+<h2>Login</h2>
+<input id="cpf" placeholder="CPF"><br>
+<input id="senha" placeholder="Senha" type="password"><br>
+<button onclick="login()">Entrar</button>
+</div>
+<script type="module" src="js/auth.js"></script>
 </body>
 </html>
+
+
+---
+
+🔐 js/auth.js
+
+import { db } from "../firebase/config.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+window.login = async () => {
+  const cpf = document.getElementById("cpf").value;
+  const senha = document.getElementById("senha").value;
+
+  const q = query(collection(db, "usuarios"), where("cpf", "==", cpf), where("senha", "==", senha));
+  const res = await getDocs(q);
+
+  if (res.empty) {
+    alert("Login inválido");
+  } else {
+    localStorage.setItem("cpf", cpf);
+    window.location.href = "index.html";
+  }
+};
+
+
+---
+
+🛒 index.html
+
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>🥩 Açougue Medela</header>
+<div class="container">
+<h2>Produtos</h2>
+<div id="produtos"></div>
+
+<h2>Carrinho</h2>
+<div id="carrinho"></div>
+<button onclick="finalizar()">Finalizar</button>
+
+<h2>Status</h2>
+<p id="status"></p>
+
+<a href="admin.html">Admin</a>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
+
+
+---
+
+⚙️ js/app.js
+
+import { db } from "../firebase/config.js";
+import { collection, getDocs, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+let carrinho = [];
+const cpf = localStorage.getItem("cpf");
+
+async function carregar() {
+  const snap = await getDocs(collection(db, "produtos"));
+  let html = "";
+
+  snap.forEach(doc => {
+    let p = doc.data();
+    html += `<div class='produto'>${p.nome} - ${p.preco} <button onclick='add("${p.nome}",${p.preco})'>+</button></div>`;
+  });
+
+  document.getElementById("produtos").innerHTML = html;
+}
+
+window.add = (n, p) => {
+  carrinho.push({ n, p });
+  render();
+};
+
+function render() {
+  let html = "";
+  carrinho.forEach(i => html += `<p>${i.n}</p>`);
+  document.getElementById("carrinho").innerHTML = html;
+}
+
+window.finalizar = async () => {
+  await addDoc(collection(db, "pedidos"), {
+    cpf,
+    carrinho,
+    status: "Em preparo"
+  });
+  alert("Pedido feito");
+};
+
+onSnapshot(collection(db, "pedidos"), snap => {
+  snap.forEach(doc => {
+    let d = doc.data();
+    if (d.cpf === cpf) document.getElementById("status").innerText = d.status;
+  });
+});
+
+carregar()
+
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+<h2>Admin</h2>
+<input id="nome" placeholder="Produto">
+<input id="preco" placeholder="Preço">
+<button onclick="addProduto()">Adicionar</button>
+
+<h2>Pedidos</h2>
+<div id="pedidos"></div>
+</div>
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
+
+
+---
+
+⚙️ js/admin.js
+
+import { db } from "../firebase/config.js";
+import { collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+window.addProduto = async () => {
+  const nome = document.getElementById("nome").value;
+  const preco = parseFloat(document.getElementById("preco").value);
+
+  await addDoc(collection(db, "produtos"), { nome, preco });
+  alert("Produto adicionado");
+};
+
+onSnapshot(collection(db, "pedidos"), snap => {
+  let html = "";
+
+  snap.forEach(docu => {
+    let d = docu.data();
+    html += `<div>${d.cpf} - ${d.status}
+    <button onclick="update('${docu.id}','Saiu')">Saiu</button>
+    </div>`;
+  });
+
+  document.getElementById("pedidos").innerHTML = html;
+});
+
+window.update = async (id, status) => {
+  await updateDoc(doc(db, "pedidos", id), { status });
+};
