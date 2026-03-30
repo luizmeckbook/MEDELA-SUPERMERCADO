@@ -3,116 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medela Supermercado - Sistema Integrado</title>
+    <title id="siteTitle">Medela Supermercado</title>
+    <style id="dynamicStyles">
+        :root { --primary: #e53935; --admin-bg: #2c3e50; --bg: #f4f4f4; --whatsapp: #25d366; }
+    </style>
     <style>
-        :root { --primary: #e53935; --admin-sec: #263238; --bg: #f8f9fa; --green: #27ae60; }
-        body { margin:0; font-family: 'Segoe UI', sans-serif; background: var(--bg); }
-        .tela { display:none; min-height: 100vh; }
+        body { margin:0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); }
+        .tela { display:none; min-height: 100vh; position: relative; }
         .ativa { display:block; }
-
-        /* Estilos de Form */
-        .box { max-width: 400px; margin: 50px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .container { padding: 15px; max-width: 900px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-red { background: var(--primary); color: white; }
-        .btn-admin { background: var(--admin-sec); color: white; }
-
-        /* Header */
-        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }
-        .header-admin { background: var(--admin-sec); }
-
-        /* Vitrine e Categorias */
-        .nav-cats { display: flex; gap: 10px; overflow-x: auto; padding: 15px; background: white; border-bottom: 1px solid #eee; }
-        .cat-item { padding: 8px 16px; background: #eee; border-radius: 20px; font-size: 14px; white-space: nowrap; cursor: pointer; }
-        .cat-item.active { background: var(--primary); color: white; }
+        button { border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; width: 100%; }
+        .btn-main { background: var(--primary); }
+        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 10; }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .produto-card { background: white; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #eee; }
-        .produto-card img { width: 100%; height: 100px; object-fit: contain; }
+        /* Chat Estilo WhatsApp */
+        .chat-screen { display: flex; flex-direction: column; height: 100vh; background: #e5ddd5; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; line-height: 1.4; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
+        .msg.received { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
+        .chat-input-area { background: #f0f0f0; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        .chat-input-area input { margin: 0; flex: 1; border-radius: 25px; padding: 10px 20px; }
+        .btn-send { width: 50px; height: 50px; border-radius: 50%; background: var(--whatsapp); font-size: 20px; }
 
-        /* Tabela Admin */
-        .admin-section { padding: 15px; }
-        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-        th { background: #f1f1f1; }
+        /* Floating Button */
+        .float-chat { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--whatsapp); font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; }
+        
+        /* Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .cat-chip { padding: 8px 15px; background: white; border-radius: 20px; margin-right: 5px; cursor: pointer; border: 1px solid #ddd; white-space: nowrap; }
+        .cat-chip.active { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
 <div id="login" class="tela ativa">
-    <div class="box">
-        <h1 style="color:var(--primary)">🛒 Medela</h1>
-        <p>Acesse sua conta ou painel admin</p>
-        <input id="cpfLogin" placeholder="CPF ou 'admin'">
-        <input id="senhaLogin" type="password" placeholder="Senha">
-        <button class="btn-red" onclick="autenticar()">Entrar no Sistema</button>
-        <p onclick="ir('cadastro')" style="cursor:pointer; color:blue; margin-top:15px;">Novo por aqui? Cadastre-se</p>
+    <div class="container" style="text-align:center; padding-top:80px;">
+        <h1 id="brandName">🛒 Medela</h1>
+        <div class="card">
+            <input id="lCpf" placeholder="CPF ou 'admin'">
+            <input id="lSenha" type="password" placeholder="Senha">
+            <button class="btn-main" onclick="entrar()">Entrar</button>
+            <p onclick="ir('cadastro')" style="color:blue; cursor:pointer; margin-top:15px;">Criar Conta</p>
+        </div>
     </div>
 </div>
 
 <div id="cadastro" class="tela">
-    <div class="box">
+    <div class="container">
         <h2>Criar Conta</h2>
-        <input id="nomeCad" placeholder="Nome Completo">
-        <input id="cpfCad" placeholder="CPF">
-        <input id="senhaCad" type="password" placeholder="Crie uma Senha">
-        <button class="btn-red" onclick="acaoCadastrar()">Cadastrar Agora</button>
-        <button onclick="ir('login')" style="margin-top:10px; background:none;">Voltar para o Login</button>
+        <input id="cNome" placeholder="Nome Completo">
+        <input id="cCpf" placeholder="CPF">
+        <input id="cSenha" type="password" placeholder="Senha">
+        <button class="btn-main" onclick="registrar()">Cadastrar</button>
+        <button onclick="ir('login')" style="background:none; color:gray; margin-top:10px;">Voltar</button>
     </div>
 </div>
 
 <div id="home" class="tela">
     <div class="header">
-        <span id="nomeUserHeader">Olá, Cliente</span>
+        <span id="welcome">Olá</span>
         <button style="width:auto; background:rgba(0,0,0,0.2)" onclick="sair()">Sair</button>
     </div>
-    
-    <div class="nav-cats" id="menuCategorias">
-        </div>
+    <div class="container">
+        <div id="catBar" style="display:flex; overflow-x:auto; padding-bottom:10px;"></div>
+        <div class="grid" id="listaLoja"></div>
+    </div>
+    <button class="float-chat" onclick="abrirChatCliente()">💬</button>
+</div>
 
-    <div class="grid" id="listaProdutosLoja">
+<div id="chat_cliente" class="tela">
+    <div class="chat-screen">
+        <div class="header" style="background:#075e54">
+            <button onclick="ir('home')" style="width:auto; background:none; font-size:20px">←</button>
+            <span>Suporte Medela</span>
+            <div style="width:30px"></div>
         </div>
+        <div class="chat-messages" id="msgs_cliente"></div>
+        <div class="chat-input-area">
+            <input id="input_msg_cliente" placeholder="Mensagem">
+            <button class="btn-send" onclick="enviarMensagem('cliente')">➤</button>
+        </div>
+    </div>
 </div>
 
 <div id="admin" class="tela">
-    <div class="header header-admin">
-        <span>⚙️ Painel Administrativo</span>
+    <div class="header" style="background:var(--admin-bg)">
+        <span>⚙️ Gestão Medela</span>
         <button style="width:auto; background:rgba(255,255,255,0.2)" onclick="sair()">Sair</button>
     </div>
-
-    <div class="admin-section">
-        <div class="box" style="margin: 10px 0; max-width: 100%;">
-            <h3>Cadastrar Produto</h3>
-            <input id="admNome" placeholder="Nome do Produto">
-            <input id="admPreco" type="number" placeholder="Preço (Ex: 12.90)">
-            <select id="admCat">
-                <option value="Açougue">Açougue</option>
-                <option value="Bebida">Bebida</option>
-                <option value="Limpeza">Limpeza</option>
-                <option value="Padaria">Padaria</option>
-                <option value="Mercearia">Mercearia</option>
-            </select>
-            <button class="btn-admin" onclick="admAdicionarProduto()">Salvar no Estoque</button>
+    <div class="container">
+        <div class="card">
+            <h3>🎨 Personalizar Site</h3>
+            <input id="cfgNome" placeholder="Nome do Mercado">
+            <input type="color" id="cfgCor">
+            <button onclick="salvarConfig()" style="background:var(--admin-bg)">Aplicar</button>
         </div>
 
-        <h3>Estoque Atual</h3>
-        <div id="estoqueLista"></div>
+        <div class="card">
+            <h3>💬 Conversas dos Clientes</h3>
+            <div id="lista_conversas_admin"></div>
+        </div>
 
-        <h3>Clientes do App</h3>
-        <table id="tabelaClientes">
-            <thead><tr><th>Nome</th><th>CPF</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <div class="card">
+            <h3>📦 Novo Produto</h3>
+            <input id="pNome" placeholder="Produto">
+            <input id="pPreco" type="number" placeholder="Preço">
+            <select id="pCat">
+                <option>Açougue</option><option>Bebida</option><option>Limpeza</option><option>Padaria</option><option>Mercearia</option>
+            </select>
+            <button onclick="addProduto()" style="background:var(--admin-bg)">Adicionar</button>
+        </div>
+
+        <div class="card">
+            <h3>👥 Usuários e Senhas</h3>
+            <div id="lista_usuarios_admin"></div>
+        </div>
+    </div>
+</div>
+
+<div id="chat_admin" class="tela">
+    <div class="chat-screen">
+        <div class="header" style="background:#075e54">
+            <button onclick="ir('admin')" style="width:auto; background:none; font-size:20px">←</button>
+            <span id="nome_cliente_chat">Cliente</span>
+            <div style="width:30px"></div>
+        </div>
+        <div class="chat-messages" id="msgs_admin"></div>
+        <div class="chat-input-area">
+            <input id="input_msg_admin" placeholder="Responder cliente...">
+            <button class="btn-send" onclick="enviarMensagem('admin')">➤</button>
+        </div>
     </div>
 </div>
 
 <script>
-/* DADOS DO SISTEMA */
-const CATEGORIAS = ["Todos", "Açougue", "Bebida", "Limpeza", "Padaria", "Mercearia"];
-let db_produtos = JSON.parse(localStorage.getItem("m_produtos")) || [];
-let cat_atual = "Todos";
+let produtos = JSON.parse(localStorage.getItem("med_prod")) || [];
+let usuarios = JSON.parse(localStorage.getItem("med_users")) || {};
+let mensagens = JSON.parse(localStorage.getItem("med_chat")) || {}; 
+let config = JSON.parse(localStorage.getItem("med_config")) || { nome: "Medela Supermercado", cor: "#e53935" };
+let usuarioAtivo = ""; // CPF do usuário logado
+let chatSelecionado = ""; // CPF do cliente que o admin está respondendo
 
-/* SISTEMA DE NAVEGAÇÃO E LOGIN */
+function aplicarConfig() {
+    document.getElementById("brandName").innerText = "🛒 " + config.nome;
+    document.getElementById("dynamicStyles").innerHTML = `:root { --primary: ${config.cor}; --admin-bg: #2c3e50; --bg: #f4f4f4; --whatsapp: #25d366; }`;
+}
+
 function ir(tela) {
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
     document.getElementById(tela).classList.add('ativa');
@@ -120,128 +159,119 @@ function ir(tela) {
     if(tela === 'admin') renderizarAdmin();
 }
 
-function autenticar() {
-    const cpf = document.getElementById("cpfLogin").value.trim();
-    const senha = document.getElementById("senhaLogin").value.trim();
-
-    // Login Admin
-    if(cpf === 'admin' && senha === 'admin123') {
-        localStorage.setItem("sessao", "ADMIN");
-        return ir('admin');
-    }
-
-    // Login Cliente
-    let users = JSON.parse(localStorage.getItem("m_users")) || {};
-    if(users[cpf] && users[cpf].senha === senha) {
-        localStorage.setItem("sessao", users[cpf].nome);
+function entrar() {
+    let cpf = document.getElementById("lCpf").value;
+    let senha = document.getElementById("lSenha").value;
+    if(cpf === 'admin' && senha === 'admin123') return ir('admin');
+    if(usuarios[cpf] && usuarios[cpf].senha === senha) {
+        usuarioAtivo = cpf;
+        localStorage.setItem("sessao", cpf);
         ir('home');
-    } else {
-        alert("Acesso negado! Verifique CPF e Senha.");
-    }
+    } else { alert("Erro!"); }
 }
 
-function acaoCadastrar() {
-    const nome = document.getElementById("nomeCad").value;
-    const cpf = document.getElementById("cpfCad").value;
-    const senha = document.getElementById("senhaCad").value;
-
-    if(!nome || !cpf) return alert("Preencha os campos!");
-
-    let users = JSON.parse(localStorage.getItem("m_users")) || {};
-    if(users[cpf]) return alert("CPF já cadastrado!");
-
-    users[cpf] = { nome, senha };
-    localStorage.setItem("m_users", JSON.stringify(users));
-    alert("Cadastro com sucesso!");
+function registrar() {
+    let nome = document.getElementById("cNome").value;
+    let cpf = document.getElementById("cCpf").value;
+    let senha = document.getElementById("cSenha").value;
+    usuarios[cpf] = { nome, senha };
+    localStorage.setItem("med_users", JSON.stringify(usuarios));
     ir('login');
 }
 
-/* LÓGICA DO ADMINISTRADOR */
-function admAdicionarProduto() {
-    const nome = document.getElementById("admNome").value;
-    const preco = parseFloat(document.getElementById("admPreco").value);
-    const cat = document.getElementById("admCat").value;
+/* CHAT LOGIC */
+function abrirChatCliente() {
+    ir('chat_cliente');
+    renderizarMensagens('msgs_cliente', usuarioAtivo);
+}
 
-    if(!nome || isNaN(preco)) return alert("Dados inválidos");
+function abrirChatAdmin(cpfCliente) {
+    chatSelecionado = cpfCliente;
+    document.getElementById("nome_cliente_chat").innerText = usuarios[cpfCliente].nome;
+    ir('chat_admin');
+    renderizarMensagens('msgs_admin', cpfCliente);
+}
 
-    db_produtos.push({ id: Date.now(), nome, preco, cat });
-    localStorage.setItem("m_produtos", JSON.stringify(db_produtos));
+function enviarMensagem(quem) {
+    let input = document.getElementById(quem === 'cliente' ? "input_msg_cliente" : "input_msg_admin");
+    let cpf = quem === 'cliente' ? usuarioAtivo : chatSelecionado;
     
-    document.getElementById("admNome").value = "";
-    document.getElementById("admPreco").value = "";
-    renderizarAdmin();
+    if(!input.value) return;
+    if(!mensagens[cpf]) mensagens[cpf] = [];
+
+    mensagens[cpf].push({
+        texto: input.value,
+        autor: quem, // 'cliente' ou 'admin'
+        data: new Date().toLocaleTimeString()
+    });
+
+    localStorage.setItem("med_chat", JSON.stringify(mensagens));
+    input.value = "";
+    renderizarMensagens(quem === 'cliente' ? 'msgs_cliente' : 'msgs_admin', cpf);
 }
 
-function admExcluir(id) {
-    db_produtos = db_produtos.filter(p => p.id !== id);
-    localStorage.setItem("m_produtos", JSON.stringify(db_produtos));
-    renderizarAdmin();
+function renderizarMensagens(containerId, cpfCliente) {
+    let div = document.getElementById(containerId);
+    let msgs = mensagens[cpfCliente] || [];
+    div.innerHTML = msgs.map(m => `
+        <div class="msg ${m.autor === (containerId === 'msgs_cliente' ? 'cliente' : 'admin') ? 'sent' : 'received'}">
+            ${m.texto} <br><small style="font-size:10px; opacity:0.5">${m.data}</small>
+        </div>
+    `).join('');
+    div.scrollTop = div.scrollHeight;
 }
 
+/* ADMIN LOGIC */
 function renderizarAdmin() {
-    // Lista de Estoque
-    const container = document.getElementById("estoqueLista");
-    container.innerHTML = db_produtos.map(p => `
-        <div class="produto-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-            <span><b>${p.nome}</b> - ${p.cat} (R$ ${p.preco.toFixed(2)})</span>
-            <button onclick="admExcluir(${p.id})" style="width:auto; padding:5px 10px; background:red; color:white;">X</button>
+    // Lista de Clientes com Senha
+    document.getElementById("lista_usuarios_admin").innerHTML = Object.keys(usuarios).map(cpf => `
+        <div class="card" style="margin-bottom:5px"><b>${usuarios[cpf].nome}</b> | CPF: ${cpf} | Senha: <b style="color:red">${usuarios[cpf].senha}</b></div>
+    `).join('');
+
+    // Lista de Conversas
+    document.getElementById("lista_conversas_admin").innerHTML = Object.keys(mensagens).map(cpf => `
+        <div class="card" onclick="abrirChatAdmin('${cpf}')" style="cursor:pointer; border-left: 5px solid var(--whatsapp)">
+            <strong>${usuarios[cpf] ? usuarios[cpf].nome : cpf}</strong><br>
+            <small>Clique para responder</small>
         </div>
-    `).join('');
-
-    // Lista de Clientes
-    const users = JSON.parse(localStorage.getItem("m_users")) || {};
-    const tbody = document.querySelector("#tabelaClientes tbody");
-    tbody.innerHTML = Object.keys(users).map(key => `
-        <tr><td>${users[key].nome}</td><td>${key}</td></tr>
-    `).join('');
+    `).join('') || "Nenhuma conversa iniciada.";
 }
 
-/* LÓGICA DA LOJA (CLIENTE) */
-function renderizarLoja() {
-    document.getElementById("nomeUserHeader").innerText = "Olá, " + localStorage.getItem("sessao");
-    
-    // Categorias
-    const menu = document.getElementById("menuCategorias");
-    menu.innerHTML = CATEGORIAS.map(c => `
-        <div class="cat-item ${cat_atual === c ? 'active' : ''}" onclick="filtrar('${c}')">${c}</div>
-    `).join('');
-
-    // Produtos
-    const grid = document.getElementById("listaProdutosLoja");
-    let lista = cat_atual === "Todos" ? db_produtos : db_produtos.filter(p => p.cat === cat_atual);
-    
-    if(lista.length === 0) {
-        grid.innerHTML = "<p style='grid-column: 1/-1; text-align:center'>Nenhum produto nesta categoria.</p>";
-        return;
-    }
-
-    grid.innerHTML = lista.map(p => `
-        <div class="produto-card">
-            <div style="font-size:40px">📦</div>
-            <strong>${p.nome}</strong><br>
-            <span style="color:var(--green); font-weight:bold">R$ ${p.preco.toFixed(2)}</span><br>
-            <button class="btn-red" style="margin-top:10px; padding:5px; font-size:12px">Adicionar</button>
-        </div>
-    `).join('');
-}
-
-function filtrar(c) {
-    cat_atual = c;
-    renderizarLoja();
-}
-
-function sair() {
-    localStorage.removeItem("sessao");
+function salvarConfig() {
+    config.nome = document.getElementById("cfgNome").value || config.nome;
+    config.cor = document.getElementById("cfgCor").value;
+    localStorage.setItem("med_config", JSON.stringify(config));
     location.reload();
 }
 
-// Iniciar
+function addProduto() {
+    let nome = document.getElementById("pNome").value;
+    let preco = parseFloat(document.getElementById("pPreco").value);
+    let cat = document.getElementById("pCat").value;
+    produtos.push({id: Date.now(), nome, preco, cat});
+    localStorage.setItem("med_prod", JSON.stringify(produtos));
+    alert("Adicionado!");
+}
+
+function renderizarLoja() {
+    document.getElementById("welcome").innerText = "Olá, " + (usuarios[usuarioAtivo] ? usuarios[usuarioAtivo].nome : "Cliente");
+    document.getElementById("listaLoja").innerHTML = produtos.map(p => `
+        <div class="card" style="text-align:center">
+            <strong>${p.nome}</strong><br>
+            <span style="color:green">R$ ${p.preco.toFixed(2)}</span><br>
+            <small>${p.cat}</small>
+            <button class="btn-main" style="margin-top:10px">Adicionar</button>
+        </div>
+    `).join('');
+}
+
+function sair() { localStorage.clear(); location.reload(); }
+
 window.onload = () => {
+    aplicarConfig();
     let s = localStorage.getItem("sessao");
-    if(s === "ADMIN") ir('admin');
-    else if(s) ir('home');
+    if(s) { usuarioAtivo = s; ir('home'); }
 };
 </script>
-
 </body>
 </html>
