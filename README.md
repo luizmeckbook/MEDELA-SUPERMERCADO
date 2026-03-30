@@ -35,17 +35,18 @@ header {
   text-align:center;
 }
 
-.produto {
+.msg {
+  background:#e0e0e0;
+  margin:5px;
+  padding:8px;
+  border-radius:8px;
+}
+
+.pedido {
   background:white;
   margin:10px;
   padding:10px;
   border-radius:10px;
-}
-
-.admin {
-  background:#111;
-  color:white;
-  padding:10px;
 }
 </style>
 </head>
@@ -63,42 +64,35 @@ header {
 <!-- CADASTRO -->
 <div id="cadastro" class="box" style="display:none;">
 <h2>Cadastro</h2>
-<input id="nome" placeholder="Nome completo">
+<input id="nome" placeholder="Nome">
 <input id="cpfCadastro" placeholder="CPF">
-<input id="rg" placeholder="Identidade">
 <input id="senhaCadastro" type="password" placeholder="Senha">
 <button onclick="cadastrar()">Criar</button>
-<span onclick="mostrarLogin()">Voltar</span>
 </div>
 
-<!-- APP CLIENTE -->
+<!-- APP -->
 <div id="app" style="display:none;">
-<header>Bem-vindo <span id="nomeUser"></span></header>
-<div id="produtos"></div>
+<header>Olá <span id="nomeUser"></span></header>
 
 <h3>Chat</h3>
-<div id="chatBox"></div>
+<div id="chat"></div>
 <input id="msg">
-<button onclick="enviarMsg()">Enviar</button>
+<button onclick="enviar()">Enviar</button>
+
+<h3>Pedido</h3>
+<button onclick="criarPedido()">Fazer Pedido</button>
+<div id="pedidos"></div>
 </div>
 
 <!-- ADMIN -->
 <div id="admin" style="display:none;">
-<div class="admin">👑 PAINEL ADMIN MASTER</div>
+<header>👑 ADMIN</header>
 
-<h3>Criar Produto</h3>
-<input id="nomeProd" placeholder="Nome">
-<input id="precoProd" placeholder="Preço">
-<button onclick="criarProduto()">Adicionar</button>
-
-<h3>Produtos</h3>
-<div id="listaAdmin"></div>
-
-<h3>Usuários</h3>
-<div id="usuarios"></div>
+<h3>Pedidos</h3>
+<div id="adminPedidos"></div>
 
 <h3>Chat</h3>
-<div id="chatAdmin"></div>
+<div id="adminChat"></div>
 </div>
 
 <script type="module">
@@ -109,8 +103,8 @@ import {
   addDoc,
   getDocs,
   updateDoc,
-  deleteDoc,
-  doc
+  doc,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -122,7 +116,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔑 ADMIN MASTER FIXO
+// ADMIN MASTER
 const MASTER_CPF = "00000000000";
 const MASTER_SENHA = "123456";
 
@@ -132,136 +126,120 @@ window.mostrarCadastro = () => {
   cadastro.style.display="block";
 };
 
-window.mostrarLogin = () => {
-  cadastro.style.display="none";
-  login.style.display="block";
-};
-
 // CADASTRO
 window.cadastrar = async () => {
-  await addDoc(collection(db,"usuarios"), {
+  await addDoc(collection(db,"usuarios"),{
     nome:nome.value,
     cpf:cpfCadastro.value,
-    rg:rg.value,
     senha:senhaCadastro.value,
     admin:false
   });
   alert("Criado!");
-  mostrarLogin();
 };
 
 // LOGIN
+let usuarioAtual = "";
+
 window.login = async () => {
 
-  // 👑 MASTER LOGIN
-  if(cpfLogin.value === MASTER_CPF && senhaLogin.value === MASTER_SENHA){
+  // MASTER
+  if(cpfLogin.value==MASTER_CPF && senhaLogin.value==MASTER_SENHA){
     login.style.display="none";
     admin.style.display="block";
     carregarAdmin();
+    ouvirChatAdmin();
+    ouvirPedidosAdmin();
     return;
   }
 
   const snap = await getDocs(collection(db,"usuarios"));
-
   snap.forEach(docu=>{
     const u = docu.data();
 
     if(u.cpf==cpfLogin.value && u.senha==senhaLogin.value){
-
+      usuarioAtual = u.nome;
       nomeUser.innerText = u.nome;
       login.style.display="none";
+      app.style.display="block";
 
-      if(u.admin){
-        admin.style.display="block";
-        carregarAdmin();
-      } else {
-        app.style.display="block";
-        carregarProdutos();
-      }
+      ouvirChat();
+      ouvirPedidos();
     }
   });
 };
 
-// PRODUTOS
-window.criarProduto = async () => {
-  await addDoc(collection(db,"produtos"),{
-    nome:nomeProd.value,
-    preco:precoProd.value
-  });
-  carregarAdmin();
-};
-
-async function carregarProdutos(){
-  const snap = await getDocs(collection(db,"produtos"));
-  produtos.innerHTML="";
-  snap.forEach(d=>{
-    const p = d.data();
-    produtos.innerHTML += `
-      <div class="produto">
-        <h3>${p.nome}</h3>
-        <p>R$ ${p.preco}</p>
-      </div>`;
-  });
-}
-
-// ADMIN
-async function carregarAdmin(){
-
-  // PRODUTOS
-  const snap = await getDocs(collection(db,"produtos"));
-  listaAdmin.innerHTML="";
-  snap.forEach(d=>{
-    const p = d.data();
-    listaAdmin.innerHTML += `
-      <div>
-        ${p.nome} - ${p.preco}
-        <button onclick="del('${d.id}')">Excluir</button>
-      </div>`;
-  });
-
-  // USUÁRIOS
-  const users = await getDocs(collection(db,"usuarios"));
-  usuarios.innerHTML="";
-  users.forEach(u=>{
-    const data = u.data();
-    usuarios.innerHTML += `
-      <div>
-        👤 ${data.nome} | CPF: ${data.cpf} | SENHA: ${data.senha}
-        <br>
-        <button onclick="tornarAdmin('${u.id}')">Tornar Admin</button>
-      </div><hr>`;
-  });
-
-  // CHAT
-  const chat = await getDocs(collection(db,"chat"));
-  chatAdmin.innerHTML="";
-  chat.forEach(c=>{
-    const m = c.data();
-    chatAdmin.innerHTML += `<p>${m.msg}</p>`;
-  });
-}
-
-// PROMOVER ADMIN
-window.tornarAdmin = async (id) => {
-  await updateDoc(doc(db,"usuarios",id),{
-    admin:true
-  });
-  alert("Agora é admin!");
-  carregarAdmin();
-};
-
-// DELETE PRODUTO
-window.del = async (id) => {
-  await deleteDoc(doc(db,"produtos",id));
-  carregarAdmin();
-};
-
-// CHAT
-window.enviarMsg = async () => {
+// CHAT TEMPO REAL
+window.enviar = async () => {
   await addDoc(collection(db,"chat"),{
+    nome:usuarioAtual,
     msg:msg.value
   });
 };
+
+function ouvirChat(){
+  onSnapshot(collection(db,"chat"), snap=>{
+    chat.innerHTML="";
+    snap.forEach(d=>{
+      const m = d.data();
+      chat.innerHTML += `<div class="msg">${m.nome}: ${m.msg}</div>`;
+    });
+  });
+}
+
+function ouvirChatAdmin(){
+  onSnapshot(collection(db,"chat"), snap=>{
+    adminChat.innerHTML="";
+    snap.forEach(d=>{
+      const m = d.data();
+      adminChat.innerHTML += `<div class="msg">${m.nome}: ${m.msg}</div>`;
+    });
+  });
+}
+
+// PEDIDOS
+window.criarPedido = async () => {
+  await addDoc(collection(db,"pedidos"),{
+    cliente:usuarioAtual,
+    status:"Preparando"
+  });
+};
+
+function ouvirPedidos(){
+  onSnapshot(collection(db,"pedidos"), snap=>{
+    pedidos.innerHTML="";
+    snap.forEach(d=>{
+      const p = d.data();
+      if(p.cliente==usuarioAtual){
+        pedidos.innerHTML += `
+          <div class="pedido">
+            Status: ${p.status}
+          </div>`;
+      }
+    });
+  });
+}
+
+// ADMIN PEDIDOS
+function ouvirPedidosAdmin(){
+  onSnapshot(collection(db,"pedidos"), snap=>{
+    adminPedidos.innerHTML="";
+    snap.forEach(d=>{
+      const p = d.data();
+      adminPedidos.innerHTML += `
+        <div>
+          ${p.cliente} - ${p.status}
+          <button onclick="mudar('${d.id}','Saiu')">Saiu</button>
+          <button onclick="mudar('${d.id}','Entregue')">Entregue</button>
+        </div>`;
+    });
+  });
+}
+
+window.mudar = async (id,status) => {
+  await updateDoc(doc(db,"pedidos",id),{status});
+};
+
+function carregarAdmin(){}
 </script>
 
 </body>
