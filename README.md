@@ -1,205 +1,223 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medela Supermercado - Seguro</title>
-<style>
-    :root { --primary: #e53935; --bg: #f5f5f5; --white: #ffffff; --green: #2ecc71; }
-    body { margin:0; font-family: 'Segoe UI', Arial; background: var(--bg); }
-    .tela { display:none; min-height: 100vh; }
-    .ativa { display:block; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medela Supermercado - Admin System</title>
+    <style>
+        :root { --primary: #e53935; --admin-color: #2c3e50; --bg: #f4f4f4; --green: #2ecc71; }
+        body { margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); }
+        .tela { display:none; min-height: 100vh; }
+        .ativa { display:block; }
 
-    /* Forms */
-    .login-container { text-align:center; padding:50px 20px; max-width: 400px; margin: auto; }
-    input { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box; }
-    button { background: var(--primary); color:white; border:none; padding:12px; border-radius:8px; width:100%; cursor:pointer; font-weight:bold; }
-    .link { color: #e53935; text-decoration: underline; cursor: pointer; display: block; margin-top: 15px; }
+        /* Estilos Comuns */
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        input, select { width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box; }
+        button { background: var(--primary); color:white; border:none; padding:12px; border-radius:8px; width:100%; cursor:pointer; font-weight:bold; }
+        .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        
+        /* Header */
+        .header { background: var(--primary); color:white; padding:15px; display:flex; justify-content: space-between; align-items: center; }
+        .admin-header { background: var(--admin-color); }
 
-    /* Header e Loja */
-    .header { background: var(--primary); color:white; padding:15px; display:flex; justify-content: space-between; align-items: center; }
-    .container { padding: 15px; margin-bottom: 80px; }
-    .produtos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .card { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        /* Grid de Produtos */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        /* Admin Table */
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+        th { background: #eee; }
 
-    /* Carrinho */
-    #carrinho-modal { position: fixed; bottom: 0; background: white; width: 100%; height: 70%; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.2); z-index: 100; transform: translateY(100%); transition: 0.3s; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-    #carrinho-modal.aberto { transform: translateY(0); }
-    .item-carrinho { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-    
-    .badge { background: white; color: var(--primary); padding: 2px 6px; border-radius: 50%; font-size: 12px; margin-left: 5px; }
-</style>
+        /* Floating Cart */
+        .cart-float { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:var(--green); color:white; border:none; font-size:24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor:pointer; }
+    </style>
 </head>
 <body>
 
 <div id="login" class="tela ativa">
-    <div class="login-container">
-        <h2>🛒 Medela Login</h2>
-        <input id="cpfLogin" placeholder="Seu CPF">
-        <input id="senhaLogin" type="password" placeholder="Sua Senha">
+    <div class="container" style="text-align:center; padding-top:100px;">
+        <h2>🛒 Medela Supermercado</h2>
+        <input id="cpfLogin" placeholder="CPF (use 'admin' para painel)">
+        <input id="senhaLogin" type="password" placeholder="Senha">
         <button onclick="entrar()">Entrar</button>
-        <span class="link" onclick="ir('cadastro')">Não tem conta? Cadastre-se</span>
+        <p onclick="ir('cadastro')" style="color:var(--primary); cursor:pointer; margin-top:20px;">Criar nova conta</p>
     </div>
 </div>
 
 <div id="cadastro" class="tela">
-    <div class="login-container">
-        <h2>Criar Conta Única</h2>
-        <p>Use seu CPF como identificador único.</p>
-        <input id="cpfCad" placeholder="Digite seu CPF">
-        <input id="senhaCad" type="password" placeholder="Crie uma senha forte">
+    <div class="container">
+        <h2>Criar Conta</h2>
+        <input id="nomeCad" placeholder="Nome Completo">
+        <input id="cpfCad" placeholder="CPF (Único)">
+        <input id="senhaCad" type="password" placeholder="Senha">
         <button onclick="cadastrar()">Finalizar Cadastro</button>
-        <span class="link" onclick="ir('login')">Já tenho conta</span>
+        <button onclick="ir('login')" style="background:#888; margin-top:10px;">Voltar</button>
     </div>
 </div>
 
 <div id="home" class="tela">
     <div class="header">
-        <span id="userNome">Olá</span>
+        <span id="txtBoasVindas">Olá!</span>
         <button style="width:auto; background:rgba(0,0,0,0.2)" onclick="sair()">Sair</button>
     </div>
     <div class="container">
-        <h3>Produtos</h3>
-        <div class="produtos-grid" id="listaProdutos"></div>
+        <select id="filtroCat" onchange="renderizarLoja()">
+            <option value="Todos">Todas as Categorias</option>
+            <option value="Alimentos">Alimentos</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Limpeza">Limpeza</option>
+        </select>
+        <div id="listaProdutosLoja" class="grid"></div>
     </div>
-    
-    <button onclick="toggleCarrinho()" style="position:fixed; bottom:20px; right:20px; width:70px; height:70px; border-radius:50%; background:var(--green); font-size:24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-        🛒<span id="cartCount" class="badge">0</span>
-    </button>
+    <button class="cart-float" onclick="alert('Funcionalidade de finalizar pedido...')">🛒</button>
 </div>
 
-<div id="carrinho-modal">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-        <h2>Carrinho</h2>
-        <button style="width:auto; background:none; color:black; font-size:24px" onclick="toggleCarrinho()">✕</button>
+<div id="admin" class="tela">
+    <div class="header admin-header">
+        <span>Painel de Controle</span>
+        <button style="width:auto; background:rgba(255,255,255,0.2)" onclick="sair()">Sair Admin</button>
     </div>
-    <div id="itensCarrinho"></div>
-    <div style="margin-top:20px; border-top: 2px solid #eee; padding-top:10px;">
-        <h3>Total: R$ <span id="totalCarrinho">0.00</span></h3>
-        <button onclick="finalizarCompra()" style="background:var(--green)">Enviar para WhatsApp</button>
+    <div class="container">
+        <div class="card">
+            <h3>Novo Produto</h3>
+            <input id="pNome" placeholder="Nome do Produto">
+            <input id="pPreco" type="number" placeholder="Preço (Ex: 10.50)">
+            <select id="pCat">
+                <option value="Alimentos">Alimentos</option>
+                <option value="Bebidas">Bebidas</option>
+                <option value="Limpeza">Limpeza</option>
+            </select>
+            <button onclick="salvarProduto()" style="background:var(--admin-color)">Adicionar na Loja</button>
+        </div>
+
+        <div class="card">
+            <h3>Gerenciar Produtos</h3>
+            <div id="listaAdminProdutos"></div>
+        </div>
+
+        <div class="card">
+            <h3>Clientes Cadastrados</h3>
+            <table id="tabelaClientes">
+                <thead><tr><th>Nome</th><th>CPF</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-// --- BANCO DE DADOS LOCAL ---
-let produtos = [
-    {id: 1, nome: "Arroz 5kg", preco: 25.90},
-    {id: 2, nome: "Feijão Preto", preco: 7.50},
-    {id: 3, nome: "Óleo de Soja", preco: 6.80},
-    {id: 4, nome: "Leite Integral", preco: 4.90}
+/* BANCO DE DADOS */
+let db_produtos = JSON.parse(localStorage.getItem("medela_produtos")) || [
+    {id: Date.now(), nome: "Café 500g", preco: 18.90, cat: "Alimentos"}
 ];
 
-let carrinho = [];
+/* NAVEGAÇÃO */
+function ir(tela) {
+    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+    document.getElementById(tela).classList.add('ativa');
+    if(tela === 'home') renderizarLoja();
+    if(tela === 'admin') renderizarAdmin();
+}
 
-// --- FUNÇÕES DE USUÁRIO (A SENHA ÚNICA) ---
+/* CADASTRO E LOGIN */
 function cadastrar() {
-    let cpf = document.getElementById("cpfCad").value.trim();
-    let senha = document.getElementById("senhaCad").value.trim();
+    const nome = document.getElementById("nomeCad").value;
+    const cpf = document.getElementById("cpfCad").value;
+    const senha = document.getElementById("senhaCad").value;
+    
+    if(!nome || !cpf || !senha) return alert("Preencha tudo!");
 
-    if(cpf.length < 3 || senha.length < 3) {
-        alert("Preencha os campos corretamente!");
-        return;
-    }
+    let usuarios = JSON.parse(localStorage.getItem("medela_users")) || {};
+    if(usuarios[cpf]) return alert("Este CPF já existe!");
 
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-
-    // VERIFICA SE O USUÁRIO JÁ EXISTE
-    if(usuarios[cpf]) {
-        alert("Erro: Este CPF já está cadastrado no sistema.");
-        return;
-    }
-
-    // SALVA O NOVO USUÁRIO
-    usuarios[cpf] = senha;
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-    alert("Cadastro realizado com sucesso! Agora faça login.");
+    usuarios[cpf] = { nome, senha };
+    localStorage.setItem("medela_users", JSON.stringify(usuarios));
+    alert("Conta criada!");
     ir('login');
 }
 
 function entrar() {
-    let cpf = document.getElementById("cpfLogin").value.trim();
-    let senha = document.getElementById("senhaLogin").value.trim();
-    
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
+    const cpf = document.getElementById("cpfLogin").value;
+    const senha = document.getElementById("senhaLogin").value;
 
-    // VALIDAÇÃO DA SENHA ÚNICA
-    if(usuarios[cpf] && usuarios[cpf] === senha) {
-        localStorage.setItem("usuarioLogado", cpf);
-        document.getElementById("userNome").innerText = "Olá, " + cpf;
-        renderizarProdutos();
+    if(cpf === 'admin' && senha === 'admin123') return ir('admin');
+
+    let usuarios = JSON.parse(localStorage.getItem("medela_users")) || {};
+    if(usuarios[cpf] && usuarios[cpf].senha === senha) {
+        localStorage.setItem("user_atual", usuarios[cpf].nome);
         ir('home');
     } else {
-        alert("CPF ou Senha incorretos!");
+        alert("Dados incorretos!");
     }
 }
 
-// --- FUNÇÕES DO CARRINHO ---
-function addAoCarrinho(id) {
-    let p = produtos.find(item => item.id === id);
-    carrinho.push(p);
-    atualizarUI();
-}
+/* ADMINISTRAÇÃO */
+function salvarProduto() {
+    const nome = document.getElementById("pNome").value;
+    const preco = parseFloat(document.getElementById("pPreco").value);
+    const cat = document.getElementById("pCat").value;
 
-function atualizarUI() {
-    document.getElementById("cartCount").innerText = carrinho.length;
-    let lista = document.getElementById("itensCarrinho");
-    let total = 0;
+    if(!nome || !preco) return alert("Dados inválidos");
+
+    db_produtos.push({ id: Date.now(), nome, preco, cat });
+    localStorage.setItem("medela_produtos", JSON.stringify(db_produtos));
     
-    lista.innerHTML = carrinho.map((item, index) => {
-        total += item.preco;
-        return `<div class="item-carrinho">
-            <span>${item.nome} - R$ ${item.preco.toFixed(2)}</span>
-            <button onclick="removerItem(${index})" style="width:auto; padding:5px; background:red">X</button>
-        </div>`;
-    }).join('');
-    
-    document.getElementById("totalCarrinho").innerText = total.toFixed(2);
+    document.getElementById("pNome").value = "";
+    document.getElementById("pPreco").value = "";
+    renderizarAdmin();
+    alert("Produto adicionado!");
 }
 
-function removerItem(index) {
-    carrinho.splice(index, 1);
-    atualizarUI();
+function excluirProduto(id) {
+    db_produtos = db_produtos.filter(p => p.id !== id);
+    localStorage.setItem("medela_produtos", JSON.stringify(db_produtos));
+    renderizarAdmin();
 }
 
-function finalizarCompra() {
-    if(carrinho.length === 0) return alert("Carrinho vazio!");
-    let texto = "Olá, gostaria de pedir: \n" + carrinho.map(i => "- " + i.nome).join("\n");
-    window.open(`https://wa.me/5521999999999?text=${encodeURIComponent(texto)}`);
+function renderizarAdmin() {
+    // Produtos
+    const lista = document.getElementById("listaAdminProdutos");
+    lista.innerHTML = db_produtos.map(p => `
+        <div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee">
+            <span>${p.nome} (${p.cat})</span>
+            <button onclick="excluirProduto(${p.id})" style="width:auto; padding:2px 10px; background:red">X</button>
+        </div>
+    `).join('');
+
+    // Clientes
+    const usuarios = JSON.parse(localStorage.getItem("medela_users")) || {};
+    const tbody = document.querySelector("#tabelaClientes tbody");
+    tbody.innerHTML = Object.keys(usuarios).map(cpf => `
+        <tr><td>${usuarios[cpf].nome}</td><td>${cpf}</td></tr>
+    `).join('');
 }
 
-// --- UTILITÁRIOS ---
-function ir(tela) {
-    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
-    document.getElementById(tela).classList.add("ativa");
-}
+/* LOJA */
+function renderizarLoja() {
+    const filtro = document.getElementById("filtroCat").value;
+    const grid = document.getElementById("listaProdutosLoja");
+    const nomeUser = localStorage.getItem("user_atual");
+    document.getElementById("txtBoasVindas").innerText = "Olá, " + (nomeUser || "Cliente");
 
-function toggleCarrinho() {
-    document.getElementById("carrinho-modal").classList.toggle("aberto");
-}
+    let filtrados = filtro === "Todos" ? db_produtos : db_produtos.filter(p => p.cat === filtro);
 
-function renderizarProdutos() {
-    document.getElementById("listaProdutos").innerHTML = produtos.map(p => `
+    grid.innerHTML = filtrados.map(p => `
         <div class="card">
             <strong>${p.nome}</strong><br>
-            R$ ${p.preco.toFixed(2)}<br>
-            <button onclick="addAoCarrinho(${p.id})" style="margin-top:10px; background:var(--green)">Adicionar</button>
+            <span style="color:green">R$ ${p.preco.toFixed(2)}</span><br>
+            <small>${p.cat}</small>
+            <button style="margin-top:10px; background:var(--green)">Adicionar</button>
         </div>
     `).join('');
 }
 
 function sair() {
-    localStorage.removeItem("usuarioLogado");
+    localStorage.removeItem("user_atual");
     location.reload();
 }
 
 window.onload = () => {
-    let logado = localStorage.getItem("usuarioLogado");
-    if(logado) {
-        document.getElementById("userNome").innerText = "Olá, " + logado;
-        renderizarProdutos();
-        ir('home');
-    }
+    if(localStorage.getItem("user_atual")) ir('home');
 };
 </script>
 </body>
