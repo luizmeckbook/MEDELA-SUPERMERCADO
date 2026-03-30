@@ -1,91 +1,161 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mercado Medela</title>
-    <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medela Supermercado</title>
+
+<style>
+body{ margin:0; font-family:Arial; background:#f5f5f5; }
+.tela{ display:none; }
+.ativa{ display:block; }
+
+.login{ text-align:center; padding:40px; }
+
+input{
+  width:90%;
+  padding:10px;
+  margin:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button{
+  background:#e53935;
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:6px;
+  width:90%;
+}
+
+.link{
+  color:blue;
+  margin-top:10px;
+  display:block;
+}
+
+.header{
+  background:#e53935;
+  color:white;
+  padding:20px;
+}
+</style>
 </head>
+
 <body>
-    <!-- Header / Menu -->
-    <header>
-        <div class="container">
-            <img src="img/logo.png" alt="Mercado Medela Logo" class="logo">
-            <nav>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#produtos">Produtos</a></li>
-                    <li><a href="#sobre">Sobre</a></li>
-                    <li><a href="#contato">Contato</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-    <!-- Home Section -->
-    <section id="home" class="hero">
-        <div class="container">
-            <h1>Bem-vindo ao Mercado Medela</h1>
-            <p>O melhor lugar para encontrar produtos de qualidade.</p>
-            <a href="#produtos" class="btn">Ver Produtos</a>
-        </div>
-    </section>
+<!-- LOGIN -->
+<div id="login" class="tela login">
+  <h2>🛒 Medela</h2>
+  <input id="cpfLogin" placeholder="CPF">
+  <input id="senhaLogin" type="password" placeholder="Senha">
+  <button onclick="entrar()">Entrar</button>
+  <span class="link" onclick="ir('cadastro')">Criar conta</span>
+</div>
 
-    <!-- Produtos Section -->
-    <section id="produtos">
-        <div class="container">
-            <h2>Nossos Produtos</h2>
-            <div class="produtos-grid">
-                <div class="produto-card">
-                    <img src="img/produto1.jpg" alt="Produto 1">
-                    <h3>Produto 1</h3>
-                    <p>Descrição do produto 1.</p>
-                    <button>Comprar</button>
-                </div>
-                <div class="produto-card">
-                    <img src="img/produto2.jpg" alt="Produto 2">
-                    <h3>Produto 2</h3>
-                    <p>Descrição do produto 2.</p>
-                    <button>Comprar</button>
-                </div>
-                <div class="produto-card">
-                    <img src="img/produto3.jpg" alt="Produto 3">
-                    <h3>Produto 3</h3>
-                    <p>Descrição do produto 3.</p>
-                    <button>Comprar</button>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- CADASTRO -->
+<div id="cadastro" class="tela login">
+  <h2>Cadastrar</h2>
+  <input id="nomeCad" placeholder="Nome completo">
+  <input id="cpfCad" placeholder="CPF">
+  <input id="senhaCad" type="password" placeholder="Senha">
+  <button onclick="cadastrar()">Cadastrar</button>
+  <span class="link" onclick="ir('login')">Voltar</span>
+</div>
 
-    <!-- Sobre Section -->
-    <section id="sobre">
-        <div class="container">
-            <h2>Sobre Nós</h2>
-            <p>Somos o Mercado Medela, com anos de experiência em oferecer produtos de qualidade e atendimento impecável aos nossos clientes.</p>
-        </div>
-    </section>
+<!-- HOME -->
+<div id="home" class="tela">
+  <div class="header">
+    <h3 id="userNome"></h3>
+  </div>
 
-    <!-- Contato Section -->
-    <section id="contato">
-        <div class="container">
-            <h2>Contato</h2>
-            <form id="form-contato">
-                <input type="text" placeholder="Nome" required>
-                <input type="email" placeholder="Email" required>
-                <textarea placeholder="Mensagem" required></textarea>
-                <button type="submit">Enviar</button>
-            </form>
-        </div>
-    </section>
+  <div style="padding:20px;">
+    <h2>Bem-vindo ao Medela 🛒</h2>
+    <button onclick="sair()">Sair</button>
+  </div>
+</div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 Mercado Medela. Todos os direitos reservados.</p>
-        </div>
-    </footer>
+<script>
 
-    <script src="js/script.js"></script>
+/* AO ABRIR */
+window.onload = function(){
+  let logado = JSON.parse(localStorage.getItem("logado"));
+
+  if(logado){
+    document.getElementById("userNome").innerText = "Olá, " + logado.nome;
+    ir("home");
+  }else{
+    ir("login");
+  }
+};
+
+/* TROCAR TELA */
+function ir(tela){
+  document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
+  document.getElementById(tela).classList.add("ativa");
+}
+
+/* CADASTRAR */
+function cadastrar(){
+  let nome = document.getElementById("nomeCad").value.trim();
+  let cpf = document.getElementById("cpfCad").value.trim();
+  let senha = document.getElementById("senhaCad").value.trim();
+
+  if(nome=="" || cpf=="" || senha==""){
+    alert("Preencha tudo!");
+    return;
+  }
+
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
+
+  if(usuarios[cpf]){
+    alert("CPF já cadastrado!");
+    return;
+  }
+
+  usuarios[cpf] = { nome: nome, senha: senha };
+
+  localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+  alert("Cadastro realizado!");
+  ir("login");
+}
+
+/* LOGIN */
+function entrar(){
+  let cpf = document.getElementById("cpfLogin").value.trim();
+  let senha = document.getElementById("senhaLogin").value.trim();
+
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
+
+  if(!usuarios[cpf]){
+    alert("CPF não cadastrado!");
+    return;
+  }
+
+  if(usuarios[cpf].senha !== senha){
+    alert("Senha incorreta!");
+    return;
+  }
+
+  localStorage.setItem("logado", JSON.stringify({
+    cpf: cpf,
+    nome: usuarios[cpf].nome
+  }));
+
+  document.getElementById("userNome").innerText = "Olá, " + usuarios[cpf].nome;
+
+  ir("home");
+}
+
+/* SAIR */
+function sair(){
+  localStorage.removeItem("logado");
+  location.reload();
+}
+
+</script>
+
 </body>
 </html>
