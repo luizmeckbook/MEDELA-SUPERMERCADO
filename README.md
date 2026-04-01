@@ -30,14 +30,12 @@
         .cat-btn.active { background: var(--primary); color: white; }  
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }  
 
-        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #333; color: white; padding: 20px; display: none; justify-content: space-between; align-items: center; z-index: 200; border-radius: 20px 20px 0 0; cursor: pointer; box-shadow: 0 -4px 10px rgba(0,0,0,0.2); }
+        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #333; color: white; padding: 20px; display: none; justify-content: space-between; align-items: center; z-index: 200; border-radius: 20px 20px 0 0; cursor: pointer; }
         .remove-btn { background: #ff5252; padding: 5px 10px; width: auto; font-size: 11px; }
         .profit-badge { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         
-        /* Estilos Relatório */
-        .report-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        .report-table th, .report-table td { border: 1px solid #eee; padding: 8px; text-align: left; }
-        .report-table th { background: #f8f8f8; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        .report-table th, .report-table td { border: 1px solid #eee; padding: 6px; text-align: left; }
     </style>
 </head>  
 <body>  
@@ -102,7 +100,7 @@
                 <option value="Dinheiro">Dinheiro</option>
             </select>
             <div id="divTroco" style="display:none;">
-                <input type="number" id="valorTroco" placeholder="Troco para quanto?">
+                <input id="valorTroco" type="number" placeholder="Troco para quanto?">
             </div>
             <button class="btn-main" onclick="finalizarPedido()" style="margin-top:15px; background:var(--whatsapp)">Finalizar via WhatsApp</button>
         </div>
@@ -117,7 +115,7 @@
     <div class="container">  
         <div class="card">  
             <h3>📊 Relatório de Vendas (Por Data)</h3>
-            <div id="relatorioVendas"></div>
+            <div id="relatorioVendas" style="overflow-x:auto"></div>
             <button onclick="limparRelatorio()" style="background:#888; font-size:10px; margin-top:10px; width:auto; padding:5px">Limpar Histórico</button>
         </div>
 
@@ -128,11 +126,11 @@
             <button onclick="salvarConfigSemRefresh()" class="btn-main">Aplicar Agora</button>  
         </div>  
         <div class="card">  
-            <h3>📦 Novo Produto (Balanceamento)</h3>  
+            <h3>📦 Novo Produto</h3>  
             <input id="pNome" placeholder="Nome do Produto">  
             <div style="display:flex; gap:10px">
-                <input id="pBruto" type="number" placeholder="Bruto (Custo)">  
-                <input id="pLiquido" type="number" placeholder="Líquido (Venda)">
+                <input id="pBruto" type="number" step="0.01" placeholder="Custo (Bruto)">  
+                <input id="pLiquido" type="number" step="0.01" placeholder="Venda (Líquido)">
             </div>
             <select id="pCat">  
                 <option>Açougue</option><option>Bebida</option><option>Limpeza</option><option>Padaria</option><option>Mercearia</option>  
@@ -140,7 +138,7 @@
             <button onclick="addProduto()" style="background:var(--admin-bg)">Cadastrar e Salvar</button>  
             <hr>
             <h3>🔍 Gerenciar Produtos</h3>
-            <input type="text" id="pesquisaAdmin" placeholder="Procurar produto cadastrado..." oninput="renderizarAdmin()">
+            <input type="text" id="pesquisaAdmin" placeholder="Procurar produto..." oninput="renderizarAdmin()">
             <div id="admin_lista_excluir" style="margin-top:10px; max-height: 250px; overflow-y: auto;"></div>
         </div>  
         <div class="card">  
@@ -156,7 +154,7 @@
 
 <div id="chat" class="tela">  
     <div class="chat-screen">  
-        <div class="header" style="background:#075e54">  
+        <div class="header" id="chatHeaderCustom">  
             <button onclick="voltarDoChat()" style="width:auto; background:none; font-size:20px">←</button>  
             <span id="chatTitulo">Chat Suporte</span>  
             <div style="width:30px"></div>  
@@ -174,7 +172,7 @@ let usuarios = JSON.parse(localStorage.getItem("m_users")) || {};
 let produtos = JSON.parse(localStorage.getItem("m_prod")) || [];  
 let config = JSON.parse(localStorage.getItem("m_cfg")) || { nome: "Medela Supermercado", cor: "#e53935" };  
 let mensagens = JSON.parse(localStorage.getItem("m_chat")) || {};  
-let vendas = JSON.parse(localStorage.getItem("m_vendas")) || []; // [{data, bruto, liquido}]
+let vendas = JSON.parse(localStorage.getItem("m_vendas")) || []; 
 let carrinho = [];
 
 let sessaoAtiva = "";   
@@ -187,39 +185,44 @@ function aplicarEstilos() {
     document.getElementById("siteTitle").innerText = config.nome;  
     document.getElementById("dynamicStyles").innerHTML = `:root { --primary: ${config.cor}; --admin-bg: #2c3e50; --bg: #f4f4f4; --whatsapp: #25d366; }`;  
     document.getElementById("headerCliente").style.backgroundColor = config.cor;  
+    document.getElementById("chatHeaderCustom").style.backgroundColor = config.cor;
 }  
   
 function ir(tela) {  
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));  
     document.getElementById(tela).classList.add('ativa');  
-    if(tela === 'home') { renderizarLoja(); atualizarBarraCarrinho(); }
+    if(tela === 'home') renderizarLoja();
     if(tela === 'admin') renderizarAdmin();  
     if(tela === 'carrinho') renderizarCarrinho();
+    if(tela === 'chat') renderizarMensagens();
 }  
   
 function entrar() {  
     let cpf = document.getElementById("lCpf").value;  
     let senha = document.getElementById("lSenha").value;  
-    if(cpf === 'SUPER-MEDELA#' && senha === 'MEDELA1053@') { sessaoAtiva = "admin"; ir('admin'); return; }  
+    if(cpf === 'admin' || cpf === 'SUPER-MEDELA#') {
+        if(senha === 'MEDELA1053@') { sessaoAtiva = "admin"; ir('admin'); return; }
+    }  
     if(usuarios[cpf] && usuarios[cpf].senha === senha) { sessaoAtiva = cpf; ir('home'); }  
-    else { alert("Dados incorretos!"); }  
+    else { alert("Acesso Negado!"); }  
 }  
   
 function registrar() {  
     let n = document.getElementById("cNome").value;  
     let c = document.getElementById("cCpf").value;  
     let s = document.getElementById("cSenha").value;  
-    if(!n || !c || !s) return alert("Preencha tudo");  
+    if(!n || !c || !s) return alert("Preencha todos os campos");  
     usuarios[c] = { nome: n, senha: s };  
     localStorage.setItem("m_users", JSON.stringify(usuarios));  
-    ir('login');  
+    alert("Cadastro realizado!"); ir('login');  
 }  
 
-/* CARRINHO E VENDAS */
 function addCarrinho(idUnico) {
     let p = produtos.find(item => item.id === idUnico);
-    carrinho.push(p);
-    atualizarBarraCarrinho();
+    if(p) {
+        carrinho.push(p);
+        atualizarBarraCarrinho();
+    }
 }
 
 function removerCarrinho(index) {
@@ -248,7 +251,7 @@ function renderizarCarrinho() {
             <button class="remove-btn" onclick="removerCarrinho(${i})">Remover</button>
         </div>`;
     });
-    document.getElementById("listaItensCarrinho").innerHTML = html || "<p style='text-align:center; padding:20px;'>Carrinho vazio</p>";
+    document.getElementById("listaItensCarrinho").innerHTML = html || "<p style='text-align:center; padding:20px;'>O carrinho está vazio.</p>";
     document.getElementById("cardPagamento").style.display = carrinho.length > 0 ? "block" : "none";
 }
 
@@ -259,139 +262,122 @@ function toggleTroco() {
 
 function finalizarPedido() {
     let metodo = document.getElementById("metodoPagamento").value;
-    if(!metodo) return alert("Escolha a forma de pagamento");
+    if(!metodo) return alert("Escolha o pagamento");
     
-    // Registrar Venda Localmente para o ADM
-    let totalLiquido = carrinho.reduce((a, b) => a + b.liquido, 0);
-    let totalBruto = carrinho.reduce((a, b) => a + b.bruto, 0);
+    let totalL = carrinho.reduce((a, b) => a + b.liquido, 0);
+    let totalB = carrinho.reduce((a, b) => a + b.bruto, 0);
     let hoje = new Date().toLocaleDateString();
     
-    vendas.push({ data: hoje, bruto: totalBruto, liquido: totalLiquido });
+    vendas.push({ data: hoje, bruto: totalB, liquido: totalL });
     localStorage.setItem("m_vendas", JSON.stringify(vendas));
 
-    // Preparar WhatsApp
-    let msg = `*Novo Pedido - ${config.nome}*\n\n`;
-    carrinho.forEach(p => msg += `- ${p.nome}: R$ ${p.liquido.toFixed(2)}\n`);
-    msg += `\n*Total:* R$ ${totalLiquido.toFixed(2)}\n*Pagamento:* ${metodo}`;
-    if(metodo === "Dinheiro") {
-        let troco = document.getElementById("valorTroco").value;
-        msg += troco ? `\n*Troco para:* R$ ${troco}` : `\n*Sem troco*`;
-    }
+    let msg = `*Pedido - ${config.nome}*\n\n`;
+    carrinho.forEach(p => msg += `• ${p.nome}: R$ ${p.liquido.toFixed(2)}\n`);
+    msg += `\n*Total:* R$ ${totalL.toFixed(2)}\n*Pagamento:* ${metodo}`;
     
     window.open(`https://wa.me/55?text=${encodeURIComponent(msg)}`);
+    carrinho = []; // Limpa após pedir
+    ir('home');
 }
 
-/* LOJA CLIENTE */
 function renderizarLoja() {  
     document.getElementById("welcome").innerText = "Olá, " + (usuarios[sessaoAtiva]?.nome || "Cliente");  
     const cats = ["Todos", "Açougue", "Bebida", "Limpeza", "Padaria", "Mercearia"];  
     document.getElementById("catNav").innerHTML = cats.map(c => `<button class="cat-btn ${categoriaAtual === c ? 'active' : ''}" onclick="filtrar('${c}')">${c}</button>`).join('');  
-    let pesquisa = document.getElementById("pesquisaLoja").value.toLowerCase();
+    
+    let busca = document.getElementById("pesquisaLoja").value.toLowerCase();
     let filtrados = categoriaAtual === "Todos" ? produtos : produtos.filter(p => p.cat === categoriaAtual);
-    if(pesquisa) filtrados = filtrados.filter(p => p.nome.toLowerCase().includes(pesquisa));
+    if(busca) filtrados = filtrados.filter(p => p.nome.toLowerCase().includes(busca));
 
     document.getElementById("listaLoja").innerHTML = filtrados.map((p) => `
         <div class="card" style="text-align:center">  
             <strong>${p.nome}</strong><br><span style="color:green">R$ ${p.liquido.toFixed(2)}</span>
             <button class="btn-main" onclick="addCarrinho(${p.id})" style="margin-top:10px; padding:5px; font-size:12px;">+ Adicionar</button>
-        </div>`).join('') || "Nenhum produto.";  
+        </div>`).join('') || "<p style='grid-column:1/3'>Sem produtos.</p>";  
 }  
+
 function filtrar(c) { categoriaAtual = c; renderizarLoja(); }
 
-/* ADMIN SYSTEM */  
 function renderizarAdmin() {  
-    // Relatório de Vendas
-    const resumoVendas = {};
+    // Relatório
+    const r = {};
     vendas.forEach(v => {
-        if(!resumoVendas[v.data]) resumoVendas[v.data] = { bruto: 0, liquido: 0 };
-        resumoVendas[v.data].bruto += v.bruto;
-        resumoVendas[v.data].liquido += v.liquido;
+        if(!r[v.data]) r[v.data] = { b: 0, l: 0 };
+        r[v.data].b += v.bruto; r[v.data].l += v.liquido;
     });
+    let hRel = `<table class="report-table"><tr><th>Data</th><th>Custo</th><th>Venda</th><th>Lucro</th></tr>`;
+    for(let d in r) hRel += `<tr><td>${d}</td><td>R$ ${r[d].b.toFixed(2)}</td><td>R$ ${r[d].l.toFixed(2)}</td><td style="color:green">R$ ${(r[d].l-r[d].b).toFixed(2)}</td></tr>`;
+    document.getElementById("relatorioVendas").innerHTML = Object.keys(r).length ? hRel + "</table>" : "Sem vendas.";
 
-    let htmlRelatorio = `<table class="report-table"><tr><th>Data</th><th>Bruto (Custo)</th><th>Líquido (Venda)</th><th>Lucro</th></tr>`;
-    for(let data in resumoVendas) {
-        let b = resumoVendas[data].bruto;
-        let l = resumoVendas[data].liquido;
-        htmlRelatorio += `<tr><td>${data}</td><td>R$ ${b.toFixed(2)}</td><td>R$ ${l.toFixed(2)}</td><td style="color:green">R$ ${(l-b).toFixed(2)}</td></tr>`;
-    }
-    htmlRelatorio += `</table>`;
-    document.getElementById("relatorioVendas").innerHTML = Object.keys(resumoVendas).length ? htmlRelatorio : "Nenhuma venda registrada hoje.";
+    // Chats
+    document.getElementById("lista_chats_admin").innerHTML = Object.keys(mensagens).map(id => `
+        <button onclick="abrirChatAdmin('${id}')" style="background:#eee; color:#333; margin-bottom:5px; text-align:left">
+            💬 ${usuarios[id]?.nome || id} (${mensagens[id].length} msgs)
+        </button>
+    `).join('') || "Sem conversas.";
 
-    // Lista de Usuários
-    document.getElementById("lista_usuarios_admin").innerHTML = Object.keys(usuarios).map(c => `  
-        <div style="border-bottom:1px solid #eee; padding:5px"><b>${usuarios[c].nome}</b> | Senha: <b style="color:red">${usuarios[c].senha}</b></div>  
-    `).join('');  
-    
-    // Lista de Produtos com Busca
-    let busca = document.getElementById("pesquisaAdmin").value.toLowerCase();
-    let listaFiltrada = busca ? produtos.filter(p => p.nome.toLowerCase().includes(busca)) : produtos;
-
-    document.getElementById("admin_lista_excluir").innerHTML = listaFiltrada.map((p) => {
-        let lucro = p.liquido - p.bruto;
-        let indexOriginal = produtos.findIndex(item => item.id === p.id);
-        return `
+    // Gerenciar Produtos (Busca Corrigida)
+    let bAdmin = document.getElementById("pesquisaAdmin").value.toLowerCase();
+    let pFiltro = bAdmin ? produtos.filter(p => p.nome.toLowerCase().includes(bAdmin)) : produtos;
+    document.getElementById("admin_lista_excluir").innerHTML = pFiltro.map((p) => `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:12px; border-bottom:1px solid #eee; padding-bottom:5px">
-            <div>
-                <b>${p.nome}</b><br>
-                B: R$ ${p.bruto.toFixed(2)} | L: R$ ${p.liquido.toFixed(2)} 
-                <span class="profit-badge">Lucro: R$ ${lucro.toFixed(2)}</span>
-            </div>
-            <button onclick="excluirProd(${indexOriginal})" style="background:red; padding:4px 8px; width:auto">Excluir</button>
-        </div>`;
-    }).join('') || "<p style='font-size:12px; color:#666'>Nenhum produto.</p>";
+            <div><b>${p.nome}</b><br>L: R$ ${p.liquido.toFixed(2)} <span class="profit-badge">Lucro: R$ ${(p.liquido-p.bruto).toFixed(2)}</span></div>
+            <button onclick="excluirProd(${p.id})" style="background:red; padding:4px 8px; width:auto">Excluir</button>
+        </div>`).join('');
+
+    document.getElementById("lista_usuarios_admin").innerHTML = Object.keys(usuarios).map(c => `<div style="font-size:12px"><b>${usuarios[c].nome}</b> - ${c}</div>`).join('');
 }  
 
 function addProduto() {  
     let n = document.getElementById("pNome").value;  
-    let b = document.getElementById("pBruto").value;  
-    let l = document.getElementById("pLiquido").value;  
-    let c = document.getElementById("pCat").value;  
-    if(!n || !b || !l) return alert("Preencha Nome, Bruto e Líquido");
-    produtos.push({ id: Date.now() + Math.random(), nome: n, bruto: parseFloat(b), liquido: parseFloat(l), cat: c });  
+    let b = parseFloat(document.getElementById("pBruto").value);  
+    let l = parseFloat(document.getElementById("pLiquido").value);  
+    if(!n || isNaN(b) || isNaN(l)) return alert("Dados inválidos");
+    produtos.push({ id: Date.now(), nome: n, bruto: b, liquido: l, cat: document.getElementById("pCat").value });  
     localStorage.setItem("m_prod", JSON.stringify(produtos));  
     document.getElementById("pNome").value = "";
-    document.getElementById("pBruto").value = "";
-    document.getElementById("pLiquido").value = "";
     renderizarAdmin();  
 }  
 
-function excluirProd(i) {
-    if(confirm("Excluir este produto?")) {
-        produtos.splice(i, 1);
+function excluirProd(id) {
+    if(confirm("Excluir produto?")) {
+        produtos = produtos.filter(p => p.id !== id);
         localStorage.setItem("m_prod", JSON.stringify(produtos));
         renderizarAdmin();
     }
 }
 
-function limparRelatorio() {
-    if(confirm("Deseja apagar todo o histórico de vendas?")) {
-        vendas = [];
-        localStorage.setItem("m_vendas", JSON.stringify(vendas));
-        renderizarAdmin();
-    }
-}
+function limparRelatorio() { if(confirm("Limpar vendas?")) { vendas = []; localStorage.setItem("m_vendas", JSON.stringify(vendas)); renderizarAdmin(); } }
 
 function salvarConfigSemRefresh() {  
     config.nome = document.getElementById("cfgNome").value || config.nome;  
     config.cor = document.getElementById("cfgCor").value;  
     localStorage.setItem("m_cfg", JSON.stringify(config));  
-    aplicarEstilos(); 
-    alert("Configurações aplicadas!");  
+    aplicarEstilos(); alert("Salvo!");  
 }  
   
 function voltarParaLogin() { sessaoAtiva = ""; carrinho = []; ir('login'); }  
 
-/* CHAT */
-function abrirSuporteVisitante() { sessaoAtiva = "visitante_" + Math.floor(Math.random()*999); clienteNoChat = sessaoAtiva; modoAdminChat = false; document.getElementById("chatTitulo").innerText = "Suporte Online"; ir('chat'); }  
-function abrirChatAdmin(cpf) { clienteNoChat = cpf; modoAdminChat = true; document.getElementById("chatTitulo").innerText = "Chat: " + (usuarios[cpf]?.nome || cpf); ir('chat'); }  
+function abrirSuporteVisitante() { sessaoAtiva = "visitante_" + Math.floor(Math.random()*999); clienteNoChat = sessaoAtiva; modoAdminChat = false; ir('chat'); }  
+function abrirChatAdmin(id) { clienteNoChat = id; modoAdminChat = true; ir('chat'); }  
 function enviarMensagem() { 
-    let input = document.getElementById("msg_input"); 
-    if(!input.value) return; 
-    let idChat = modoAdminChat ? clienteNoChat : sessaoAtiva; 
-    if(!mensagens[idChat]) mensagens[idChat] = []; 
-    mensagens[idChat].push({ texto: input.value, autor: modoAdminChat ? 'admin' : 'cliente' }); 
+    let inp = document.getElementById("msg_input"); 
+    if(!inp.value) return; 
+    let id = modoAdminChat ? clienteNoChat : sessaoAtiva; 
+    if(!mensagens[id]) mensagens[id] = []; 
+    mensagens[id].push({ texto: inp.value, autor: modoAdminChat ? 'admin' : 'cliente' }); 
     localStorage.setItem("m_chat", JSON.stringify(mensagens)); 
-    input.value = ""; 
-    renderizarMensagens(); 
+    inp.value = ""; renderizarMensagens(); 
 }  
-function renderizarMensagens() {
+function renderizarMensagens() { 
+    let id = modoAdminChat ? clienteNoChat : sessaoAtiva; 
+    let msgs = mensagens[id] || []; 
+    document.getElementById("box_msgs").innerHTML = msgs.map(m => `<div class="msg ${m.autor===(modoAdminChat?'admin':'cliente')?'sent':'received'}">${m.texto}</div>`).join(''); 
+    document.getElementById("box_msgs").scrollTop = 9999; 
+}  
+function voltarDoChat() { modoAdminChat ? ir('admin') : (sessaoAtiva.includes("visitante") ? ir('login') : ir('home')); }  
+
+window.onload = aplicarEstilos;  
+</script>  
+</body>  
+</html>
